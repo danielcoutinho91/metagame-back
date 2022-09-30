@@ -19,7 +19,7 @@ class Utils:
             {
                 'Endpoint': '/api/user',
                 'method': 'GET, POST',
-                'body': {"username": "aaaaaa", "email": "aaaaaa@aaa.com", "first_name": "Aaaaaa", "last_name": "Aaaaaa", "password": "aaaaaa"},
+                'body': {"username": "aaaaaa", "email": "aaaaaa@aaa.com", "first_name": "Aaaaaa", "last_name": "Aaaaaa", "password": "aaaaaa", "provider": ""},
                 'description': 'GET: Retorna um array com todos os usuários do sistema, POST: Cria um novo usuário com os dados da requisição'
             },
             {
@@ -27,11 +27,17 @@ class Utils:
                 'method': 'GET, PUT',
                 'body': {"username": "aaaaaa", "email": "aaaaaa@aaa.com", "first_name": "Aaaaaa", "last_name": "Aaaaaa", "password": "aaaaaa"},
                 'description': 'GET: Retorna o usuário pelo id especificado, PUT: Atualiza o usuário com o id especificado'
-            },        
+            },   
+            {
+                'Endpoint': '/api/user/find/:username_or_email',
+                'method': 'GET, PUT',
+                'body': {"username": "aaaaaa", "email": "aaaaaa@aaa.com", "first_name": "Aaaaaa", "last_name": "Aaaaaa", "password": "aaaaaa"},
+                'description': 'GET: Retorna o usuário pelo id especificado, PUT: Atualiza o usuário com o id especificado'
+            },      
             {
                 'Endpoint': '/api/login',
                 'method': 'POST',
-                'body': {"username": "aaaaaa", "password": "aaaaaa"},
+                'body': {"username": "aaaaaa", "password": "aaaaaa", "provider": "google"},
                 'description': 'Faz login do usuário com dados enviados através de uma requisição POST'
             },
             {
@@ -63,6 +69,17 @@ class UserUtils:
 
         return Response(serializer.data)
     
+    def get_user_by_username_or_email(request, pk):
+        user = User.objects.filter(username=pk).first()
+        if user is None:
+            user = User.objects.filter(email=pk).first()
+        
+        if user is not None:
+            serializer = UserSerializer(user, many=False)
+            return Response(serializer.data)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+    
     def create_user(request):
         data = request.data
         username = data['username']
@@ -70,6 +87,7 @@ class UserUtils:
         last_name = data['last_name']
         email = data['email']
         password = data['password']
+        provider = data['provider']
 
         user_by_username = User.objects.filter(username=username).first()
         user_by_email = User.objects.filter(email=email).first()
@@ -80,14 +98,26 @@ class UserUtils:
         if user_by_email:
             return HttpResponse("Email já cadastrado")
 
-        user = User.objects.create_user(
-            username=username,
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-            password=password
-        )
-        user.save()
+        if (provider=='google'):
+            print("TESTE GOOGLE")
+            password=username + "google"
+            user = User.objects.create_user(
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                password=password
+            )
+            user.save()    
+        else:
+            user = User.objects.create_user(
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                password=password
+            )
+            user.save()
 
         serializer = UserSerializer(user, many=False)
         return Response(serializer.data)
@@ -106,7 +136,7 @@ class UserUtils:
             user.save()
             
         else:
-            return HttpResponse("Usuário diferente")
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
         
         serializer = UserSerializer(user, many=False)
 

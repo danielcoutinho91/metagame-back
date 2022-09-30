@@ -21,6 +21,7 @@ def routes(request):
 def guest(request):
     HttpResponse("Necessário fazer login")
 
+
 @api_view(['GET', 'POST'])
 def user(request):
     if request.method == "GET":
@@ -49,6 +50,13 @@ def user_by_id(request, pk):
 
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+def user_by_username_or_email(request, pk):
+
+    if request.method == 'GET':
+        return UserUtils.get_user_by_username_or_email(request, pk)
+
 
 @api_view(['POST'])
 def login(request):
