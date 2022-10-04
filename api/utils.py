@@ -19,25 +19,25 @@ class Utils:
             {
                 'Endpoint': '/api/user',
                 'method': 'GET, POST',
-                'body': {"username": "aaaaaa", "email": "aaaaaa@aaa.com", "first_name": "Aaaaaa", "last_name": "Aaaaaa", "password": "aaaaaa", "provider": ""},
+                'body': {"username": "name", "email": "user_email@email.com", "first_name": "First", "last_name": "Last", "password": "senha", "provider": ""},
                 'description': 'GET: Retorna um array com todos os usuários do sistema, POST: Cria um novo usuário com os dados da requisição'
             },
             {
                 'Endpoint': '/api/user/:id',
                 'method': 'GET, PUT',
-                'body': {"username": "aaaaaa", "email": "aaaaaa@aaa.com", "first_name": "Aaaaaa", "last_name": "Aaaaaa", "password": "aaaaaa"},
+                'body': {"username": "name", "email": "user_email@email.com", "first_name": "First", "last_name": "Last", "password": "senha"},
                 'description': 'GET: Retorna o usuário pelo id especificado, PUT: Atualiza o usuário com o id especificado'
             },   
             {
                 'Endpoint': '/api/user/find/:username_or_email',
                 'method': 'GET, PUT',
-                'body': {"username": "aaaaaa", "email": "aaaaaa@aaa.com", "first_name": "Aaaaaa", "last_name": "Aaaaaa", "password": "aaaaaa"},
+                'body': {"username": "name", "email": "user_email@email.com", "first_name": "First", "last_name": "Last", "password": "senha"},
                 'description': 'GET: Retorna o usuário pelo id especificado, PUT: Atualiza o usuário com o id especificado'
             },      
             {
                 'Endpoint': '/api/login',
                 'method': 'POST',
-                'body': {"username": "aaaaaa", "password": "aaaaaa", "provider": "google"},
+                'body': {"username": "name", "password": "senha", "provider": ""},
                 'description': 'Faz login do usuário com dados enviados através de uma requisição POST'
             },
             {
@@ -65,7 +65,7 @@ class UserUtils:
             user = User.objects.get(id=pk)
             serializer = UserSerializer(user, many=False)
         except:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(data={"error": "Nenhum usuário encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
         return Response(serializer.data)
     
@@ -78,7 +78,7 @@ class UserUtils:
             serializer = UserSerializer(user, many=False)
             return Response(serializer.data)
         else:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
+            return Response(data={"error": "Nenhum usuário encontrado"}, status=status.HTTP_404_NOT_FOUND)
     
     def create_user(request):
         data = request.data
@@ -92,32 +92,23 @@ class UserUtils:
         user_by_username = User.objects.filter(username=username).first()
         user_by_email = User.objects.filter(email=email).first()
 
-        if user_by_username:
-            return HttpResponse("Já existe um usuário com esse nome")
-
         if user_by_email:
-            return HttpResponse("Email já cadastrado")
+            return Response(data={"error": "Email já cadastrado"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if user_by_username:
+            return Response(data={"error": "Username já cadastrado"}, status=status.HTTP_401_UNAUTHORIZED)
 
         if (provider=='google'):
-            print("TESTE GOOGLE")
-            password=username + "google"
-            user = User.objects.create_user(
-                username=username,
-                first_name=first_name,
-                last_name=last_name,
-                email=email,
-                password=password
-            )
-            user.save()    
-        else:
-            user = User.objects.create_user(
-                username=username,
-                first_name=first_name,
-                last_name=last_name,
-                email=email,
-                password=password
-            )
-            user.save()
+            password=username + "_google"          
+        
+        user = User.objects.create_user(
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            password=password
+        )
+        user.save()  
 
         serializer = UserSerializer(user, many=False)
         return Response(serializer.data)
@@ -136,7 +127,7 @@ class UserUtils:
             user.save()
             
         else:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
+            return Response(data={"error": "Usuário diferente do Usuário em sessão"}, status=status.HTTP_401_UNAUTHORIZED)
         
         serializer = UserSerializer(user, many=False)
 
@@ -149,20 +140,23 @@ class UserUtils:
 
         if (str(current_user) == str(user.username)):
             user.delete()
-
         else:
-            return HttpResponse("Usuário diferente")
-        return Response(f"{deleted_user} foi deletado!")
+            return Response(data={"error": "Usuário diferente do Usuário em sessão"}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(data={"msg": f"{deleted_user} foi deletado"}, status=status.HTTP_200_OK)
     
     def login(request):
         data = request.data
         username = data['username']
         password = data['password']
+        provider = data['provider']
+        if provider == 'google':
+            password = username + "_google"
+            
         user = authenticate(username=username, password=password)
 
         if user is not None:
             login_auth(request, user)
-            return HttpResponse(f"{request.user} autenticado")
+            return Response(data={"msg": f"{request.user} autenticado"}, status=status.HTTP_200_OK)
 
         else:
             user_by_email = User.objects.filter(email=username).first()            
@@ -171,13 +165,13 @@ class UserUtils:
                 user = authenticate(username=username_email, password=password)
                 if user is not None:
                     login_auth(request, user)
-                    return HttpResponse("Autenticado")
+                    return Response(data={"msg": f"{user.username} autenticado"}, status=status.HTTP_200_OK)
                 else:
-                    return HttpResponse("Usuário ou senha inválidos")
+                    return Response(data={"error": "Usuário ou senha inválidos"}, status=status.HTTP_401_UNAUTHORIZED)
             else:
-                return HttpResponse("Usuário ou senha inválidos")
+                return Response(data={"error": "Usuário ou senha inválidos"}, status=status.HTTP_401_UNAUTHORIZED)
     
     def logout(request):
         prev_user = str(request.user.username)
         logout_auth(request)
-        return HttpResponse(f"{prev_user} deslogado")
+        return Response(data={"msg": f"{prev_user} deslogado"}, status=status.HTTP_200_OK)

@@ -33,7 +33,11 @@ def user(request):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-# @login_required(login_url='/api/login')
+@api_view(['GET'])
+def unauthorized(request):
+    return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+# @login_required(login_url='/api/unauthorized')
 @api_view(['GET', 'PUT', 'DELETE'])
 def user_by_id(request, pk):
     current_user = request.user
