@@ -109,6 +109,7 @@ class UserUtils:
             password=password
         )
         user.save()  
+        UserUtils.login(request)
 
         serializer = UserSerializer(user, many=False)
         return Response(serializer.data)
