@@ -9,7 +9,7 @@ from django.contrib.auth import login as login_django
 from django.contrib.auth import logout as logout_django
 from django.contrib.auth.decorators import login_required
 from .serializers import UserSerializer
-from .utils import Utils, UserUtils
+from .utils import Utils, UserUtils, TipoMidiaUtils
 
 @api_view(['GET'])
 def routes(request):
@@ -73,3 +73,9 @@ def login(request):
 @api_view(['GET'])
 def logout(request):
     return UserUtils.logout(request)
+
+# TIPOMIDIA -------------------------------------------------------------------------------------------------------------------------------------------------------
+
+@api_view(['GET'])
+def tipo_midia(request):
+    return TipoMidiaUtils.get_all_tipo_midia()

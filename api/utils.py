@@ -5,7 +5,8 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseNotFound
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import UserSerializer
+from .serializers import UserSerializer, TipoMidiaSerializer
+from .models import TipoMidia
 
 class Utils:
     routes = [
@@ -176,3 +177,9 @@ class UserUtils:
         prev_user = str(request.user.username)
         logout_auth(request)
         return Response(data={"msg": f"{prev_user} deslogado"}, status=status.HTTP_200_OK)
+
+class TipoMidiaUtils:
+    def get_all_tipo_midia():
+        tipos_midia = TipoMidia.objects.all().order_by('id')        
+        serializer = TipoMidiaSerializer(tipos_midia, many=True)
+        return Response(serializer.data)
