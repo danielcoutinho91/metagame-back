@@ -5,12 +5,15 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseNotFound
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import UserSerializer, TipoMidiaSerializer
-from .models import TipoMidia
+from datetime import date, timedelta
+from .serializers import UserSerializer, TipoMidiaSerializer, MetaSerializer
+from .models import TipoMidia, Meta
+from api import serializers
 
 class Utils:
     routes = [
-        {"user": [
+        {
+            "user": [
             {
                 'Endpoint': '/api',
                 'method': 'GET',
@@ -46,6 +49,22 @@ class Utils:
                 'method': 'POST',
                 'body': None,
                 'description': 'Faz logout do usuário'
+            },
+            ],
+            "tipomidia": [
+            {
+                'Endpoint': '/api/tipomidia',
+                'method': 'GET',
+                'body': None,
+                'description': 'Retorna um array com os tipos de mídia'
+            },
+            ],
+            "meta": [
+            {
+                'Endpoint': '/api/meta',
+                'method': 'GET, POST',                
+                'body': {"tipomidia": "tipomidia_id", "criador": "criador_id", "quantidade_objetivo": "10", "dias_limite": "30"},
+                'description': 'GET: Retorna um array com todos as metas do sistema, POST: Cria uma nova meta com os dados da requisição'
             },
             ]
         }
@@ -182,4 +201,51 @@ class TipoMidiaUtils:
     def get_all_tipo_midia():
         tipos_midia = TipoMidia.objects.all().order_by('id')        
         serializer = TipoMidiaSerializer(tipos_midia, many=True)
+        return Response(serializer.data)
+
+class MetaUtils:
+    def get_all_metas():
+        metas = Meta.objects.all().order_by('-data_inicio')        
+        serializer = MetaSerializer(metas, many=True)
+        return Response(serializer.data)
+
+    def create_meta(request):
+        data = request.data
+        user = request.user
+
+        tipomidia_id = data['tipomidia']
+        tipomidia = TipoMidia.objects.get(id=tipomidia_id)
+        
+        criador_id = data['criador']
+        if criador_id == "":
+            criador_id = user.id
+        criador = User.objects.get(id=criador_id)
+
+        quantidade_objetivo = data['quantidade_objetivo']
+        quantidade_atual = 0
+
+        dias_limite = data['dias_limite']
+        data_limite = date.today() + timedelta(days=int(dias_limite))
+
+        is_ativa = True
+        is_cumprida = False
+
+        meta_ativa_by_type = Meta.objects.filter(tipomidia=tipomidia, is_ativa=True).first()
+
+        if meta_ativa_by_type:
+            return Response(data={"error": "Já existe uma meta ativa para esta categoria"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        meta = Meta.objects.create(
+            user=user,
+            tipomidia=tipomidia,
+            criador=criador,
+            quantidade_objetivo=quantidade_objetivo,
+            quantidade_atual=quantidade_atual,
+            data_limite=data_limite,
+            is_ativa=is_ativa,
+            is_cumprida=is_cumprida
+        )
+        meta.save()        
+
+        serializer = MetaSerializer(meta, many=False)
         return Response(serializer.data)

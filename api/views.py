@@ -9,7 +9,7 @@ from django.contrib.auth import login as login_django
 from django.contrib.auth import logout as logout_django
 from django.contrib.auth.decorators import login_required
 from .serializers import UserSerializer
-from .utils import Utils, UserUtils, TipoMidiaUtils
+from .utils import Utils, UserUtils, TipoMidiaUtils, MetaUtils
 
 @api_view(['GET'])
 def routes(request):
@@ -79,3 +79,16 @@ def logout(request):
 @api_view(['GET'])
 def tipo_midia(request):
     return TipoMidiaUtils.get_all_tipo_midia()
+
+# META ------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+@api_view(['GET', 'POST'])
+def meta(request):
+    if request.method == "GET":
+        return MetaUtils.get_all_metas()
+
+    elif request.method == "POST":
+        return MetaUtils.create_meta(request)
+
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
