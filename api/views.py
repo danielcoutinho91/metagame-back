@@ -1,14 +1,8 @@
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
-from django.shortcuts import render
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
-from django.contrib.auth import login as login_django
-from django.contrib.auth import logout as logout_django
 from django.contrib.auth.decorators import login_required
-from .serializers import UserSerializer
 from .utils import Utils, UserUtils, TipoMidiaUtils, MetaUtils
 
 @api_view(['GET'])
@@ -21,6 +15,9 @@ def routes(request):
 def guest(request):
     HttpResponse("Necessário fazer login")
 
+@api_view(['GET'])
+def unauthorized(request):
+    return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['GET', 'POST'])
 def user(request):
@@ -33,16 +30,9 @@ def user(request):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@api_view(['GET'])
-def unauthorized(request):
-    return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-# @login_required(login_url='/api/unauthorized')
+@login_required(login_url='/api/guest')
 @api_view(['GET', 'PUT', 'DELETE'])
 def user_by_id(request, pk):
-    current_user = request.user
-    print(f"CURRENT USER: {current_user}")
-
     if request.method == 'GET':
         return UserUtils.get_user_by_id(request, pk)
 
@@ -55,12 +45,11 @@ def user_by_id(request, pk):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
+@login_required(login_url='/api/guest')
 @api_view(['GET'])
 def user_by_username_or_email(request, pk):
-
     if request.method == 'GET':
         return UserUtils.get_user_by_username_or_email(request, pk)
-
 
 @api_view(['POST'])
 def login(request):
@@ -82,13 +71,220 @@ def tipo_midia(request):
 
 # META ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+@login_required(login_url='/api/guest')
 @api_view(['GET', 'POST'])
 def meta(request):
     if request.method == "GET":
-        return MetaUtils.get_all_metas()
+        return MetaUtils.get_all_metas(0, 0)
 
     elif request.method == "POST":
         return MetaUtils.create_meta(request)
 
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@login_required(login_url='/api/guest')
+@api_view(['GET'])
+def meta_ativa(request):
+    if request.method == "GET":
+        return MetaUtils.get_all_metas(0, 1)
+
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@login_required(login_url='/api/guest')
+@api_view(['GET'])
+def meta_inativa(request):
+    if request.method == "GET":
+        return MetaUtils.get_all_metas(0, 2)
+
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@login_required(login_url='/api/guest')
+@api_view(['GET'])
+def meta_cumprida(request):
+    if request.method == "GET":
+        return MetaUtils.get_all_metas(0, 3)
+
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@login_required(login_url='/api/guest')
+@api_view(['GET'])
+def metas_filmes(request):
+    if request.method == "GET":
+        return MetaUtils.get_all_metas(1, 0)
+
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@login_required(login_url='/api/guest')
+@api_view(['GET'])
+def metas_jogos(request):
+    if request.method == "GET":
+        return MetaUtils.get_all_metas(2, 0)
+
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@login_required(login_url='/api/guest')
+@api_view(['GET'])
+def metas_livros(request):
+    if request.method == "GET":
+        return MetaUtils.get_all_metas(3, 0)
+
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@login_required(login_url='/api/guest')
+@api_view(['GET'])
+def metas_filmes_by_atividade(request, is_ativa):
+    if request.method == "GET":
+        if is_ativa == 'ativa':
+            return MetaUtils.get_all_metas(1, 1)
+        elif is_ativa == 'inativa':
+            return MetaUtils.get_all_metas(1, 2)
+        elif is_ativa == 'cumprida':
+            return MetaUtils.get_all_metas(3, 3)
+        else:
+            return MetaUtils.get_all_metas(1, 0)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@login_required(login_url='/api/guest')
+@api_view(['GET'])
+def metas_jogos_by_atividade(request, is_ativa):
+    if request.method == "GET":
+        if is_ativa == 'ativa':
+            return MetaUtils.get_all_metas(2, 1)
+        elif is_ativa == 'inativa':
+            return MetaUtils.get_all_metas(2, 2)
+        elif is_ativa == 'cumprida':
+            return MetaUtils.get_all_metas(2, 3)
+        else:
+            return MetaUtils.get_all_metas(2, 0)
+
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@login_required(login_url='/api/guest')
+@api_view(['GET'])
+def metas_livros_by_atividade(request, is_ativa):
+    if request.method == "GET":
+        if is_ativa == 'ativa':
+            return MetaUtils.get_all_metas(3, 1)
+        elif is_ativa == 'inativa':
+            return MetaUtils.get_all_metas(3, 2)
+        elif is_ativa == 'cumprida':
+            return MetaUtils.get_all_metas(3, 3)
+        else:
+            return MetaUtils.get_all_metas(3, 0)
+
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@login_required(login_url='/api/guest')
+@api_view(['GET', 'DELETE'])
+def meta_by_id(request, pk):
+    if request.method == 'GET':
+        return MetaUtils.get_meta_by_id(request, pk)
+
+    elif request.method == 'DELETE':
+        return MetaUtils.delete_meta(request, pk)
+
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@login_required(login_url='/api/guest')
+@api_view(['GET'])
+def metas_by_user(request, pk):
+    if request.method == 'GET':
+        return MetaUtils.get_all_metas_by_user(request, 0, 0, pk)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@login_required(login_url='/api/guest')
+@api_view(['GET'])
+def metas_filmes_by_user(request, pk):
+    if request.method == 'GET':
+        return MetaUtils.get_all_metas_by_user(request, 1, 0, pk)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@login_required(login_url='/api/guest')
+@api_view(['GET'])
+def metas_jogos_by_user(request, pk):
+    if request.method == 'GET':
+        return MetaUtils.get_all_metas_by_user(request, 2, 0, pk)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@login_required(login_url='/api/guest')
+@api_view(['GET'])
+def metas_livros_by_user(request, pk):
+    if request.method == 'GET':
+        return MetaUtils.get_all_metas_by_user(request, 3, 0, pk)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@login_required(login_url='/api/guest')
+@api_view(['GET'])
+def metas_by_user_and_atividade(request, pk, is_ativa):
+    if request.method == 'GET':
+        if is_ativa == 'ativa':
+            return MetaUtils.get_all_metas_by_user(request, 0, 1, pk)
+        elif is_ativa == 'inativa':
+            return MetaUtils.get_all_metas_by_user(request, 0, 2, pk)
+        elif is_ativa == 'cumprida':
+            return MetaUtils.get_all_metas_by_user(request, 0, 3, pk)
+        else:
+            return MetaUtils.get_all_metas_by_user(request, 0, 0, pk)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@login_required(login_url='/api/guest')
+@api_view(['GET'])
+def metas_filmes_by_user_and_atividade(request, pk, is_ativa):
+    if request.method == 'GET':
+        if is_ativa == 'ativa':
+            return MetaUtils.get_all_metas_by_user(request, 1, 1, pk)
+        elif is_ativa == 'inativa':
+            return MetaUtils.get_all_metas_by_user(request, 1, 2, pk)
+        elif is_ativa == 'cumprida':
+            return MetaUtils.get_all_metas_by_user(request, 1, 3, pk)
+        else:
+            return MetaUtils.get_all_metas_by_user(request, 1, 0, pk)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@login_required(login_url='/api/guest')
+@api_view(['GET'])
+def metas_jogos_by_user_and_atividade(request, pk, is_ativa):
+    if request.method == 'GET':
+        if is_ativa == 'ativa':
+            return MetaUtils.get_all_metas_by_user(request, 2, 1, pk)
+        elif is_ativa == 'inativa':
+            return MetaUtils.get_all_metas_by_user(request, 2, 2, pk)
+        elif is_ativa == 'cumprida':
+            return MetaUtils.get_all_metas_by_user(request, 2, 3, pk)
+        else:
+            return MetaUtils.get_all_metas_by_user(request, 2, 0, pk)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@login_required(login_url='/api/guest')
+@api_view(['GET'])
+def metas_livros_by_user_and_atividade(request, pk, is_ativa):
+    if request.method == 'GET':
+        if is_ativa == 'ativa':
+            return MetaUtils.get_all_metas_by_user(request, 3, 1, pk)
+        elif is_ativa == 'inativa':
+            return MetaUtils.get_all_metas_by_user(request, 3, 2, pk)
+        elif is_ativa == 'cumprida':
+            return MetaUtils.get_all_metas_by_user(request, 3, 3, pk)
+        else:
+            return MetaUtils.get_all_metas_by_user(request, 3, 0, pk)
+        
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)

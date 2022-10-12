@@ -2,13 +2,11 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login as login_auth
 from django.contrib.auth import logout as logout_auth
 from django.contrib.auth.models import User
-from django.http import HttpResponse, HttpResponseNotFound
 from rest_framework import status
 from rest_framework.response import Response
 from datetime import date, timedelta
 from .serializers import UserSerializer, TipoMidiaSerializer, MetaSerializer
 from .models import TipoMidia, Meta
-from api import serializers
 
 class Utils:
     routes = [
@@ -28,9 +26,9 @@ class Utils:
             },
             {
                 'Endpoint': '/api/user/:id',
-                'method': 'GET, PUT',
+                'method': 'GET, PUT, DELETE',
                 'body': {"username": "name", "email": "user_email@email.com", "first_name": "First", "last_name": "Last", "password": "senha"},
-                'description': 'GET: Retorna o usuário pelo id especificado, PUT: Atualiza o usuário com o id especificado'
+                'description': 'GET: Retorna o usuário pelo id especificado, PUT: Atualiza o usuário com o id especificado, DELETE: Deleta o usuário com o id especificado'
             },   
             {
                 'Endpoint': '/api/user/find/:username_or_email',
@@ -65,6 +63,48 @@ class Utils:
                 'method': 'GET, POST',                
                 'body': {"tipomidia": "tipomidia_id", "criador": "criador_id", "quantidade_objetivo": "10", "dias_limite": "30"},
                 'description': 'GET: Retorna um array com todos as metas do sistema, POST: Cria uma nova meta com os dados da requisição'
+            },
+            {
+                'Endpoint': '/api/meta/:id',
+                'method': 'GET, DELETE',                
+                'body': None,
+                'description': 'GET: Retorna a meta pelo id especificao, DELETE: Deleta a meta com o id especificado'
+            },
+            {
+                'Endpoint': '/api/meta/:is_ativa',
+                'method': 'GET',                
+                'body': None,
+                'description': 'GET: Retorna todas as metas pela status dela. (ativa / inativa / cumprida)'
+            },
+            {
+                'Endpoint': '/api/meta/:tipo_midia',
+                'method': 'GET',                
+                'body': None,
+                'description': 'GET: Retorna todas as metas pelo tipo dela. (filme / jogo / livro)'
+            },
+            {
+                'Endpoint': '/api/meta/:tipo_midia/:is_ativa',
+                'method': 'GET',                
+                'body': None,
+                'description': 'GET: Retorna todas as metas pelo tipo e status dela. (filme / jogo / livro) / (ativa / inativa / cumprida)'
+            },
+            {
+                'Endpoint': '/api/meta/user/:user_id',
+                'method': 'GET',                
+                'body': None,
+                'description': 'GET: Retorna todas as metas do usuário.'
+            },
+            {
+                'Endpoint': '/api/meta/:tipo_midia/user/:user_id',
+                'method': 'GET',                
+                'body': None,
+                'description': 'GET: Retorna todas as metas de determinado tipo do usuário. (filme / jogo / livro)'
+            },
+            {
+                'Endpoint': '/api/meta/:tipo_midia/user/:user_id/:is_ativa',
+                'method': 'GET',                
+                'body': None,
+                'description': 'GET: Retorna todas as metas de determinado tipo e status do usuário. (filme / jogo / livro) / (ativa / inativa / cumprida)'
             },
             ]
         }
@@ -204,8 +244,46 @@ class TipoMidiaUtils:
         return Response(serializer.data)
 
 class MetaUtils:
-    def get_all_metas():
-        metas = Meta.objects.all().order_by('-data_inicio')        
+    def get_all_metas(tipomidia_id, is_ativa):
+        metas = Meta.objects.all().order_by('-data_inicio') 
+
+        if tipomidia_id > 0:
+            metas = metas.filter(tipomidia_id=tipomidia_id).order_by('-data_inicio', '-is_ativa')
+        
+        if is_ativa > 0:
+            if is_ativa == 1:
+                metas = metas.filter(is_ativa=True).order_by('-data_inicio', '-is_ativa')
+            elif is_ativa == 2:
+                metas = metas.filter(is_ativa=False).order_by('-data_inicio', '-is_ativa')
+            else:
+                metas = metas.filter(is_cumprida=True).order_by('-data_inicio', '-is_ativa')
+
+        serializer = MetaSerializer(metas, many=True)
+        return Response(serializer.data)
+    
+    def get_meta_by_id(request, pk):
+        try:
+            meta = Meta.objects.get(id=pk)
+            serializer = MetaSerializer(meta, many=False)
+        except:
+            return Response(data={"error": "Nenhuma meta encontrada"}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response(serializer.data)
+    
+    def get_all_metas_by_user(request, tipomidia_id, is_ativa, pk):
+        metas = Meta.objects.filter(user_id=pk).order_by('-data_inicio')
+            
+        if tipomidia_id > 0:
+            metas = metas.filter(tipomidia_id=tipomidia_id).order_by('-data_inicio', '-is_ativa')
+        
+        if is_ativa > 0:
+            if is_ativa == 1:
+                metas = metas.filter(is_ativa=True).order_by('-data_inicio', '-is_ativa')
+            elif is_ativa == 2:
+                metas = metas.filter(is_ativa=False).order_by('-data_inicio', '-is_ativa')
+            else:
+                metas = metas.filter(is_cumprida=True).order_by('-data_inicio', '-is_ativa')
+
         serializer = MetaSerializer(metas, many=True)
         return Response(serializer.data)
 
@@ -249,3 +327,8 @@ class MetaUtils:
 
         serializer = MetaSerializer(meta, many=False)
         return Response(serializer.data)
+  
+    def delete_meta(request, pk):
+        meta = Meta.objects.get(id=pk)
+        meta.delete()
+        return Response(data={"msg": "Meta deletada"}, status=status.HTTP_200_OK)
