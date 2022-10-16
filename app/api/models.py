@@ -1,18 +1,17 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-class TipoMidia(models.Model):
-    tipo = models.CharField(max_length=30)
+class MediaType(models.Model):
+    type = models.CharField(max_length=30)
 
-class Meta(models.Model):
+class Goal(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    tipomidia = models.ForeignKey(TipoMidia, on_delete=models.CASCADE)
-    criador = models.ForeignKey(User, on_delete=models.CASCADE, related_name='criador')
-    quantidade_objetivo = models.BigIntegerField()
-    quantidade_atual = models.BigIntegerField()
-    data_inicio = models.DateField(auto_now_add=True)
-    data_limite = models.DateField()
-    data_conclusao = models.DateField(blank=True, null=True)
-    is_ativa = models.BooleanField()
-    is_cumprida = models.BooleanField()
-
+    mediatype = models.ForeignKey(MediaType, on_delete=models.CASCADE)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='creator')
+    objective_quantity = models.BigIntegerField()
+    current_quantity = models.BigIntegerField()
+    start_date = models.DateField(auto_now_add=True)
+    limit_date = models.DateField()
+    end_date = models.DateField(blank=True, null=True)
+    is_active = models.BooleanField()
+    is_done = models.BooleanField()

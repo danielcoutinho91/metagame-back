@@ -1,18 +1,18 @@
 from rest_framework.serializers import ModelSerializer
 from django.contrib.auth.models import User
-from .models import TipoMidia, Meta
+from .models import MediaType, Goal
 
 class UserSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
 
-class TipoMidiaSerializer(ModelSerializer):
+class MediaTypeSerializer(ModelSerializer):
     class Meta:
-        model = TipoMidia
+        model = MediaType
         fields = '__all__'
 
-class MetaSerializer(ModelSerializer):
+class GoalSerializer(ModelSerializer):
     class Meta:
-        model = Meta
+        model = Goal
         fields = '__all__'

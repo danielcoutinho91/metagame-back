@@ -5,8 +5,8 @@ from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.response import Response
 from datetime import date, timedelta
-from .serializers import UserSerializer, TipoMidiaSerializer, MetaSerializer
-from .models import TipoMidia, Meta
+from .serializers import UserSerializer, MediaTypeSerializer, GoalSerializer
+from .models import MediaType, Goal
 
 class Utils:
     routes = [
@@ -19,19 +19,19 @@ class Utils:
                 'description': 'Retorna um array routes'
             },
             {
-                'Endpoint': '/api/user',
+                'Endpoint': '/api/users',
                 'method': 'GET, POST',
                 'body': {"username": "name", "email": "user_email@email.com", "first_name": "First", "last_name": "Last", "password": "senha", "provider": ""},
                 'description': 'GET: Retorna um array com todos os usuários do sistema, POST: Cria um novo usuário com os dados da requisição'
             },
             {
-                'Endpoint': '/api/user/:id',
+                'Endpoint': '/api/users/:user_id',
                 'method': 'GET, PUT, DELETE',
                 'body': {"username": "name", "email": "user_email@email.com", "first_name": "First", "last_name": "Last", "password": "senha"},
                 'description': 'GET: Retorna o usuário pelo id especificado, PUT: Atualiza o usuário com o id especificado, DELETE: Deleta o usuário com o id especificado'
             },   
             {
-                'Endpoint': '/api/user/find/:username_or_email',
+                'Endpoint': '/api/users/find/:username_or_email',
                 'method': 'GET, PUT',
                 'body': {"username": "name", "email": "user_email@email.com", "first_name": "First", "last_name": "Last", "password": "senha"},
                 'description': 'GET: Retorna o usuário pelo id especificado, PUT: Atualiza o usuário com o id especificado'
@@ -44,67 +44,67 @@ class Utils:
             },
             {
                 'Endpoint': '/api/logout',
-                'method': 'POST',
+                'method': 'GET',
                 'body': None,
                 'description': 'Faz logout do usuário'
             },
             ],
-            "tipomidia": [
+            "mediatypes": [
             {
-                'Endpoint': '/api/tipomidia',
+                'Endpoint': '/api/mediatypes',
                 'method': 'GET',
                 'body': None,
                 'description': 'Retorna um array com os tipos de mídia'
             },
             ],
-            "meta": [
+            "goals": [
             {
-                'Endpoint': '/api/meta',
+                'Endpoint': '/api/goals',
                 'method': 'GET, POST',                
-                'body': {"tipomidia": "tipomidia_id", "criador": "criador_id", "quantidade_objetivo": "10", "dias_limite": "30"},
+                'body': {"mediatype": "mediatype_id", "creator": "creator_id", "objective_quantity": "10", "limit_days": "30"},
                 'description': 'GET: Retorna um array com todos as metas do sistema, POST: Cria uma nova meta com os dados da requisição'
             },
             {
-                'Endpoint': '/api/meta/:id',
+                'Endpoint': '/api/goals/:goal_id',
                 'method': 'GET, DELETE',                
                 'body': None,
                 'description': 'GET: Retorna a meta pelo id especificao, DELETE: Deleta a meta com o id especificado'
             },
             {
-                'Endpoint': '/api/meta/:is_ativa',
+                'Endpoint': '/api/goals/:is_active',
                 'method': 'GET',                
                 'body': None,
-                'description': 'GET: Retorna todas as metas pela status dela. (ativa / inativa / cumprida)'
+                'description': 'GET: Retorna todas as metas pela status dela. (active / inactive / done)'
             },
             {
-                'Endpoint': '/api/meta/:tipo_midia',
+                'Endpoint': '/api/goals/:media_type',
                 'method': 'GET',                
                 'body': None,
-                'description': 'GET: Retorna todas as metas pelo tipo dela. (filme / jogo / livro)'
+                'description': 'GET: Retorna todas as metas pelo tipo dela. (movies / games / books)'
             },
             {
-                'Endpoint': '/api/meta/:tipo_midia/:is_ativa',
+                'Endpoint': '/api/goals/:media_type/:is_active',
                 'method': 'GET',                
                 'body': None,
-                'description': 'GET: Retorna todas as metas pelo tipo e status dela. (filme / jogo / livro) / (ativa / inativa / cumprida)'
+                'description': 'GET: Retorna todas as metas pelo tipo e status dela. (movies / games / books) / (active / inactive / done)'
             },
             {
-                'Endpoint': '/api/meta/user/:user_id',
+                'Endpoint': '/api/goals/user/:user_id',
                 'method': 'GET',                
                 'body': None,
                 'description': 'GET: Retorna todas as metas do usuário.'
             },
             {
-                'Endpoint': '/api/meta/:tipo_midia/user/:user_id',
+                'Endpoint': '/api/goals/user/:user_id/:media_type',
                 'method': 'GET',                
                 'body': None,
-                'description': 'GET: Retorna todas as metas de determinado tipo do usuário. (filme / jogo / livro)'
+                'description': 'GET: Retorna todas as metas de determinado tipo do usuário. (movies / games / books)'
             },
             {
-                'Endpoint': '/api/meta/:tipo_midia/user/:user_id/:is_ativa',
+                'Endpoint': '/api/goals/user/:user_id/:media_type/:is_active',
                 'method': 'GET',                
                 'body': None,
-                'description': 'GET: Retorna todas as metas de determinado tipo e status do usuário. (filme / jogo / livro) / (ativa / inativa / cumprida)'
+                'description': 'GET: Retorna todas as metas de determinado tipo e status do usuário. (movies / games / books) / (active / inactive / done)'
             },
             ]
         }
@@ -113,26 +113,34 @@ class Utils:
     def get_routes():
         return Response(Utils.routes)
 
-class UserUtils:   
+class UserUtils:
+
+    def get_me(request):
+        current_user = request.user
+        user = User.objects.filter(id=current_user.id).first()
+        if user is None:
+            return Response(data={"error": "Nenhum usuário logado"}, status=status.HTTP_401_UNAUTHORIZED)
+        serializer = UserSerializer(user, many=False)
+        return Response(serializer.data)
 
     def get_all_users():
         users = User.objects.all().order_by('first_name', 'last_name')        
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
     
-    def get_user_by_id(request, pk):
+    def get_user_by_id(request, user_id):
         try:
-            user = User.objects.get(id=pk)
+            user = User.objects.get(id=user_id)
             serializer = UserSerializer(user, many=False)
         except:
             return Response(data={"error": "Nenhum usuário encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
         return Response(serializer.data)
     
-    def get_user_by_username_or_email(request, pk):
-        user = User.objects.filter(username=pk).first()
+    def get_user_by_username_or_email(request, username):
+        user = User.objects.filter(username=username).first()
         if user is None:
-            user = User.objects.filter(email=pk).first()
+            user = User.objects.filter(email=username).first()
         
         if user is not None:
             serializer = UserSerializer(user, many=False)
@@ -159,7 +167,8 @@ class UserUtils:
             return Response(data={"error": "Username já cadastrado"}, status=status.HTTP_401_UNAUTHORIZED)
 
         if (provider=='google'):
-            password=username + "_google"          
+            username=email + "_[google]"
+            password=email + "_[google]"          
         
         user = User.objects.create_user(
             username=username,
@@ -169,15 +178,15 @@ class UserUtils:
             password=password
         )
         user.save()  
-        UserUtils.login(request)
+        login_auth(request, user)
 
         serializer = UserSerializer(user, many=False)
         return Response(serializer.data)
     
-    def update_user(request, pk):
+    def update_user(request, user_id):
         data = request.data
         current_user = request.user
-        user = User.objects.get(id=pk)
+        user = User.objects.get(id=user_id)
 
         if (str(current_user) == str(user.username)):
             user.username = data['username']
@@ -186,7 +195,7 @@ class UserUtils:
             user.email = data['email']
             user.set_password(data['password'])
             user.save()
-            
+            login_auth(request, user)
         else:
             return Response(data={"error": "Usuário diferente do Usuário em sessão"}, status=status.HTTP_401_UNAUTHORIZED)
         
@@ -194,10 +203,10 @@ class UserUtils:
 
         return Response(serializer.data)
   
-    def delete_user(request, pk):
+    def delete_user(request, user_id):
         deleted_user = str(request.user)
         current_user = request.user
-        user = User.objects.get(id=pk)
+        user = User.objects.get(id=user_id)
 
         if (str(current_user) == str(user.username)):
             user.delete()
@@ -211,7 +220,7 @@ class UserUtils:
         password = data['password']
         provider = data['provider']
         if provider == 'google':
-            password = username + "_google"
+            password = username + "_[google]"
             
         user = authenticate(username=username, password=password)
 
@@ -237,98 +246,100 @@ class UserUtils:
         logout_auth(request)
         return Response(data={"msg": f"{prev_user} deslogado"}, status=status.HTTP_200_OK)
 
-class TipoMidiaUtils:
-    def get_all_tipo_midia():
-        tipos_midia = TipoMidia.objects.all().order_by('id')        
-        serializer = TipoMidiaSerializer(tipos_midia, many=True)
+class MediaTypeUtils:
+    def get_all_media_type():
+        media_types = MediaType.objects.all().order_by('id')        
+        serializer = MediaTypeSerializer(media_types, many=True)
         return Response(serializer.data)
 
-class MetaUtils:
-    def get_all_metas(tipomidia_id, is_ativa):
-        metas = Meta.objects.all().order_by('-data_inicio') 
+class GoalUtils:
+    def get_all_goals(mediatype_id, is_active):
+        goals = Goal.objects.all().order_by('-start_date') 
 
-        if tipomidia_id > 0:
-            metas = metas.filter(tipomidia_id=tipomidia_id).order_by('-data_inicio', '-is_ativa')
+        if mediatype_id > 0:
+            goals = goals.filter(mediatype_id=mediatype_id).order_by('-start_date', '-is_active')
         
-        if is_ativa > 0:
-            if is_ativa == 1:
-                metas = metas.filter(is_ativa=True).order_by('-data_inicio', '-is_ativa')
-            elif is_ativa == 2:
-                metas = metas.filter(is_ativa=False).order_by('-data_inicio', '-is_ativa')
+        if is_active > 0:
+            if is_active == 1:
+                goals = goals.filter(is_active=True).order_by('-start_date', '-is_active')
+            elif is_active == 2:
+                goals = goals.filter(is_active=False).order_by('-start_date', '-is_active')
             else:
-                metas = metas.filter(is_cumprida=True).order_by('-data_inicio', '-is_ativa')
+                goals = goals.filter(is_done=True).order_by('-start_date', '-is_active')
 
-        serializer = MetaSerializer(metas, many=True)
+        serializer = GoalSerializer(goals, many=True)
         return Response(serializer.data)
     
-    def get_meta_by_id(request, pk):
+    def get_goal_by_id(request, goal_id):
         try:
-            meta = Meta.objects.get(id=pk)
-            serializer = MetaSerializer(meta, many=False)
+            goal = Goal.objects.get(id=goal_id)
+            serializer = GoalSerializer(goal, many=False)
         except:
             return Response(data={"error": "Nenhuma meta encontrada"}, status=status.HTTP_404_NOT_FOUND)
 
         return Response(serializer.data)
     
-    def get_all_metas_by_user(request, tipomidia_id, is_ativa, pk):
-        metas = Meta.objects.filter(user_id=pk).order_by('-data_inicio')
+    def get_all_goals_by_user(request, mediatype_id, is_active, user_id):
+        goals = Goal.objects.filter(user_id=user_id).order_by('-start_date')
             
-        if tipomidia_id > 0:
-            metas = metas.filter(tipomidia_id=tipomidia_id).order_by('-data_inicio', '-is_ativa')
+        if mediatype_id > 0:
+            goals = goals.filter(mediatype_id=mediatype_id).order_by('-start_date', '-is_active')
         
-        if is_ativa > 0:
-            if is_ativa == 1:
-                metas = metas.filter(is_ativa=True).order_by('-data_inicio', '-is_ativa')
-            elif is_ativa == 2:
-                metas = metas.filter(is_ativa=False).order_by('-data_inicio', '-is_ativa')
+        if is_active > 0:
+            if is_active == 1:
+                goals = goals.filter(is_active=True).order_by('-start_date', '-is_active')
+            elif is_active == 2:
+                goals = goals.filter(is_active=False).order_by('-start_date', '-is_active')
             else:
-                metas = metas.filter(is_cumprida=True).order_by('-data_inicio', '-is_ativa')
+                goals = goals.filter(is_done=True).order_by('-start_date', '-is_active')
 
-        serializer = MetaSerializer(metas, many=True)
+        serializer = GoalSerializer(goals, many=True)
         return Response(serializer.data)
 
-    def create_meta(request):
+    def create_goal(request):
         data = request.data
         user = request.user
+        user_id = user.id
+        print(f"USER ID = {user_id}")
 
-        tipomidia_id = data['tipomidia']
-        tipomidia = TipoMidia.objects.get(id=tipomidia_id)
+        mediatype_id = data['mediatype']
+        mediatype = MediaType.objects.get(id=mediatype_id)
         
-        criador_id = data['criador']
-        if criador_id == "":
-            criador_id = user.id
-        criador = User.objects.get(id=criador_id)
+        creator_id = data['creator']
+        if creator_id == "":
+            creator_id = user.id
+        creator = User.objects.get(id=creator_id)
 
-        quantidade_objetivo = data['quantidade_objetivo']
-        quantidade_atual = 0
+        objective_quantity = data['objective_quantity']
+        current_quantity = 0
 
-        dias_limite = data['dias_limite']
-        data_limite = date.today() + timedelta(days=int(dias_limite))
+        limit_days = data['limit_days']
+        limit_date = date.today() + timedelta(days=int(limit_days))
 
-        is_ativa = True
-        is_cumprida = False
+        is_active = True
+        is_done = False
 
-        meta_ativa_by_type = Meta.objects.filter(tipomidia=tipomidia, is_ativa=True).first()
+        active_goal_by_type = Goal.objects.filter(mediatype=mediatype, is_active=True, user_id=user_id).first()
 
-        if meta_ativa_by_type:
+        if active_goal_by_type:
             return Response(data={"error": "Já existe uma meta ativa para esta categoria"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        meta = Meta.objects.create(
+        goal = Goal.objects.create(
             user=user,
-            tipomidia=tipomidia,
-            criador=criador,
-            quantidade_objetivo=quantidade_objetivo,
-            quantidade_atual=quantidade_atual,
-            data_limite=data_limite,
-            is_ativa=is_ativa,
-            is_cumprida=is_cumprida
+            mediatype=mediatype,
+            creator=creator,
+            objective_quantity=objective_quantity,
+            current_quantity=current_quantity,
+            limit_date=limit_date,
+            is_active=is_active,
+            is_done=is_done
         )
-        meta.save()        
+        goal.save()        
 
-        serializer = MetaSerializer(meta, many=False)
+        serializer = GoalSerializer(goal, many=False)
         return Response(serializer.data)
   
-    def delete_meta(request, pk):
-        meta = Meta.objects.get(id=pk)
-        meta.delete()
+    def delete_goal(request, goal_id):
+        goal = Goal.objects.get(id=goal_id)
+        goal.delete()
         return Response(data={"msg": "Meta deletada"}, status=status.HTTP_200_OK)
