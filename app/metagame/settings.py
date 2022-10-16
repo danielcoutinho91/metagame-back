@@ -11,7 +11,14 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
 import os
+
+is_docker = os.environ.get('IS_DOCKER_RUNNING', False)
+
+if not is_docker:
+    dotenv_path = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', '..', '.env.local'))
+    load_dotenv(dotenv_path)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,7 +31,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = int(os.environ.get('DEBUG', default=0))
+DEBUG = int(os.environ.get('DEBUG', default=1))
 
 ALLOWED_HOSTS = []
 
@@ -82,7 +89,7 @@ DATABASES = {
     'default': {
         'ENGINE': os.environ.get('SQL_ENGINE', 'django.db.backends.postgresql'),
         'NAME': os.environ.get('SQL_DATABASE', 'metagame'),
-        'HOST': os.environ.get('SQL_HOST', 'localhost'),
+        'HOST': os.environ.get('SQL_HOST', 'localhost') if is_docker else 'localhost',
         'USER': os.environ.get('SQL_USER', 'postgres'),
         'PASSWORD': os.environ.get('SQL_PASSWORD', '123456'),
         'PORT': os.environ.get('SQL_PORT', '5432'),

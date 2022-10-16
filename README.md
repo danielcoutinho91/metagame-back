@@ -4,7 +4,7 @@ API developed using Django and PostgreSQL.
 
 ## Local instructions
 
-1. Run your Postgres database on port 5432.
+1. Run your Postgres database on port `5432`.
 
 2. Create `metagame` database.
 
