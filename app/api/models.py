@@ -15,3 +15,7 @@ class Goal(models.Model):
     end_date = models.DateField(blank=True, null=True)
     is_active = models.BooleanField()
     is_done = models.BooleanField()
+
+class FavoriteGoals(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    goal = models.ForeignKey(Goal, on_delete=models.CASCADE)

@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from django.contrib.auth.decorators import login_required
-from .utils import Utils, UserUtils, MediaTypeUtils, GoalUtils
+from .utils import Utils, UserUtils, MediaTypeUtils, GoalUtils, FavoriteGoalsUtils
 
 @api_view(['GET'])
 def routes(request):
@@ -287,5 +287,19 @@ def book_goals_by_user_and_activity(request, user_id, is_active):
         else:
             return GoalUtils.get_all_goals_by_user(request, 3, 0, user_id)
         
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+# GOAL LIKES ------------------------------------------------------------------------------------------------------------------------------------------------------
+
+@login_required(login_url='/api/unauthorized')
+@api_view(['GET', 'POST'])
+def favorite_goals_by_user(request, user_id):
+    if request.method == 'GET':
+        return FavoriteGoalsUtils.get_all_favorite_goals_by_user(request, user_id)
+    
+    elif request.method == "POST":
+            return FavoriteGoalsUtils.create_or_delete_favorite_goal(request, user_id)
+
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
