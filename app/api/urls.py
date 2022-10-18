@@ -21,6 +21,7 @@ urlpatterns = [
     path('goals/movies', views.movie_goals, name='movie_goals'),
     path('goals/games', views.game_goals, name='game_goals'),
     path('goals/books', views.book_goals, name='book_goals'),
+    path('goals/favorites', views.favorite_goals, name='favorite_goals_by_user'),
     path('goals/movies/<str:is_active>', views.movie_goals_by_activity, name='movie_goals_by_activity'),
     path('goals/games/<str:is_active>', views.game_goals_by_activity, name='game_goals_by_activity'),
     path('goals/books/<str:is_active>', views.book_goals_by_activity, name='book_goals_by_activity'),

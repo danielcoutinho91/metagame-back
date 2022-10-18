@@ -4,8 +4,8 @@ from django.contrib.auth import logout as logout_auth
 from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.response import Response
-from datetime import date, timedelta
-from .serializers import UserSerializer, MediaTypeSerializer, GoalSerializer, FavoriteGoalsSerializer
+from datetime import date, datetime, timedelta
+from .serializers import UserSerializer, MediaTypeSerializer, GoalSerializer, FavoriteGoalsSerializer, GoalTemplateSerializer
 from .models import FavoriteGoals, MediaType, Goal
 
 
@@ -84,6 +84,12 @@ class Utils:
                     'description': 'GET: Retorna todas as metas pelo tipo dela. (movies / games / books)'
                 },
                 {
+                    'Endpoint': '/api/goals/favorites',
+                    'method': 'GET, POST',
+                    'body': None,
+                    'description': 'GET: Retorna todas as metas favoritas ordenadas por quantidade de likes. POST: Cria ou remove uma meta favorita'
+                },
+                {
                     'Endpoint': '/api/goals/:media_type/:is_active',
                     'method': 'GET',
                     'body': None,
@@ -100,6 +106,12 @@ class Utils:
                     'method': 'GET',
                     'body': None,
                     'description': 'GET: Retorna todas as metas de determinado tipo do usuário. (movies / games / books)'
+                },
+                {
+                    'Endpoint': '/api/goals/user/:user_id/favorites',
+                    'method': 'GET',
+                    'body': None,
+                    'description': 'GET: Retorna todas as metas favoritas de determinado tipo do usuário.'
                 },
                 {
                     'Endpoint': '/api/goals/user/:user_id/:media_type/:is_active',
@@ -361,14 +373,55 @@ class GoalUtils:
 
 class FavoriteGoalsUtils:
 
-    def get_all_favorite_goals_by_user(request, user_id):
-        favorite_goals = FavoriteGoals.objects.filter(user_id=user_id)
+    def get_all_favorite_goals(request):
+        goals = Goal.objects.raw(
+            "SELECT " +
+            "   api_goal.id, api_goal.objective_quantity, (api_goal.limit_date - api_goal.start_date) as limit_days, api_goal.mediatype_id, creator_id, count(api_favoritegoals.goal_id) as likes " +
+            "FROM " +
+            "   api_goal " +
+            "INNER JOIN api_favoritegoals ON api_favoritegoals.goal_id = api_goal.id " +
+            "GROUP BY " +
+            "   api_goal.id " +
+            "ORDER BY " +
+            "   count(api_favoritegoals.goal_id) desc "
+        )
 
-        serializer = FavoriteGoalsSerializer(favorite_goals, many=True)
+        serializer = GoalTemplateSerializer(goals, many=True)
+        for i, data in enumerate(serializer.data):
+            limit_date = datetime.strptime(data['limit_date'], '%Y-%m-%d').date()
+            start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date()
+            limit_days = (limit_date - start_date).days
+            data['limit_days'] = limit_days
+            data['likes'] = goals[i].likes
+        
         return Response(serializer.data)
 
-    def create_or_delete_favorite_goal(request, user_id):
+    def get_all_favorite_goals_by_user(request, user_id):
+        goals = Goal.objects.raw(
+            "SELECT " +
+            "   api_goal.id, api_goal.objective_quantity, (api_goal.limit_date - api_goal.start_date) as limit_days, api_goal.mediatype_id, creator_id " +
+            "FROM " +
+            "   api_goal " +
+            "INNER JOIN api_favoritegoals ON api_favoritegoals.goal_id = api_goal.id " +
+            "WHERE " +
+            "   api_favoritegoals.user_id = %s",
+            [user_id]
+        )
+
+        serializer = GoalTemplateSerializer(goals, many=True)
+        for data in serializer.data:
+            limit_date = datetime.strptime(data['limit_date'], '%Y-%m-%d').date()
+            start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date()
+            limit_days = (limit_date - start_date).days
+            data['limit_days'] = limit_days
+        
+        return Response(serializer.data)
+
+    def create_or_delete_favorite_goal(request):
         data = request.data
+        user = request.user
+
+        user_id = user.id
         goal_id = data['goal']
 
         goal_like = FavoriteGoals.objects.filter(

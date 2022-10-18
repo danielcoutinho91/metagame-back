@@ -294,6 +294,18 @@ def book_goals_by_user_and_activity(request, user_id, is_active):
 
 @login_required(login_url='/api/unauthorized')
 @api_view(['GET', 'POST'])
+def favorite_goals(request):
+    if request.method == 'GET':
+        return FavoriteGoalsUtils.get_all_favorite_goals(request)
+    
+    elif request.method == "POST":
+            return FavoriteGoalsUtils.create_or_delete_favorite_goal(request)
+
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@login_required(login_url='/api/unauthorized')
+@api_view(['GET', 'POST'])
 def favorite_goals_by_user(request, user_id):
     if request.method == 'GET':
         return FavoriteGoalsUtils.get_all_favorite_goals_by_user(request, user_id)
