@@ -111,7 +111,7 @@ class Utils:
                     'Endpoint': '/api/goals/user/:user_id/favorites',
                     'method': 'GET',
                     'body': None,
-                    'description': 'GET: Retorna todas as metas favoritas de determinado tipo do usuário.'
+                    'description': 'GET: Retorna todas as metas favoritas do usuário.'
                 },
                 {
                     'Endpoint': '/api/goals/user/:user_id/:media_type/:is_active',
@@ -122,6 +122,8 @@ class Utils:
             ]
         }
     ]
+
+    providers = ['google']
 
     def get_routes():
         return Response(Utils.routes)
@@ -180,9 +182,9 @@ class UserUtils:
         if user_by_username:
             return Response(data={"error": "Username já cadastrado"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        if (provider == 'google'):
+        if (provider in Utils.providers):
             username = email
-            password = email + "_[google]"
+            password = email + f"_[{provider}]"
 
         user = User.objects.create_user(
             username=username,
@@ -233,8 +235,8 @@ class UserUtils:
         username = data['username']
         password = data['password']
         provider = data['provider']
-        if provider == 'google':
-            password = username + "_[google]"
+        if provider in Utils.providers:
+            password = username + f"_[{provider}]"
 
         user = authenticate(username=username, password=password)
 
