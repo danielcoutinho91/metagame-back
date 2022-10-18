@@ -1,4 +1,5 @@
 from django.urls import path
+
 from . import views
 
 urlpatterns = [
@@ -10,7 +11,7 @@ urlpatterns = [
     path('users/<str:user_id>', views.user_by_id, name='user_by_id'),
     path('users/find/<str:username>', views.user_by_username_or_email, name='user_by_username_or_email'),
     path('login', views.login, name='login'),
-    path('logout', views.logout, name='logout'),
+    path('logout', views.logout, name='logout'),    
 
     path('mediatypes', views.media_type, name='media_type'),
 
@@ -21,7 +22,7 @@ urlpatterns = [
     path('goals/movies', views.movie_goals, name='movie_goals'),
     path('goals/games', views.game_goals, name='game_goals'),
     path('goals/books', views.book_goals, name='book_goals'),
-    path('goals/favorites', views.favorite_goals, name='favorite_goals_by_user'),
+    path('goals/favorites', views.favorite_goals, name='favorite_goals'),
     path('goals/movies/<str:is_active>', views.movie_goals_by_activity, name='movie_goals_by_activity'),
     path('goals/games/<str:is_active>', views.game_goals_by_activity, name='game_goals_by_activity'),
     path('goals/books/<str:is_active>', views.book_goals_by_activity, name='book_goals_by_activity'),

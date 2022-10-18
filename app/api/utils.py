@@ -5,9 +5,10 @@ from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.response import Response
 from datetime import date, datetime, timedelta
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from .serializers import UserSerializer, MediaTypeSerializer, GoalSerializer, FavoriteGoalsSerializer, GoalTemplateSerializer
 from .models import FavoriteGoals, MediaType, Goal
-
 
 class Utils:
     routes = [
@@ -28,12 +29,14 @@ class Utils:
                 {
                     'Endpoint': '/api/users/:user_id',
                     'method': 'GET, PUT, DELETE',
+                    'headers': {"Authorization": "Bearer token"},
                     'body': {"username": "name", "email": "user_email@email.com", "first_name": "First", "last_name": "Last", "password": "senha"},
                     'description': 'GET: Retorna o usuário pelo id especificado, PUT: Atualiza o usuário com o id especificado, DELETE: Deleta o usuário com o id especificado'
                 },
                 {
                     'Endpoint': '/api/users/find/:username_or_email',
                     'method': 'GET, PUT',
+                    'headers': {"Authorization": "Bearer token"},
                     'body': {"username": "name", "email": "user_email@email.com", "first_name": "First", "last_name": "Last", "password": "senha"},
                     'description': 'GET: Retorna o usuário pelo id especificado, PUT: Atualiza o usuário com o id especificado'
                 },
@@ -62,60 +65,70 @@ class Utils:
                 {
                     'Endpoint': '/api/goals',
                     'method': 'GET, POST',
+                    'headers': {"Authorization": "Bearer token"},
                     'body': {"mediatype": "mediatype_id", "creator": "creator_id", "objective_quantity": "10", "limit_days": "30"},
                     'description': 'GET: Retorna um array com todos as metas do sistema, POST: Cria uma nova meta com os dados da requisição'
                 },
                 {
                     'Endpoint': '/api/goals/:goal_id',
                     'method': 'GET, DELETE',
+                    'headers': {"Authorization": "Bearer token"},
                     'body': None,
                     'description': 'GET: Retorna a meta pelo id especificao, DELETE: Deleta a meta com o id especificado'
                 },
                 {
                     'Endpoint': '/api/goals/:is_active',
                     'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
                     'body': None,
                     'description': 'GET: Retorna todas as metas pela status dela. (active / inactive / done)'
                 },
                 {
                     'Endpoint': '/api/goals/:media_type',
                     'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
                     'body': None,
                     'description': 'GET: Retorna todas as metas pelo tipo dela. (movies / games / books)'
                 },
                 {
                     'Endpoint': '/api/goals/favorites',
                     'method': 'GET, POST',
+                    'headers': {"Authorization": "Bearer token"},
                     'body': None,
                     'description': 'GET: Retorna todas as metas favoritas ordenadas por quantidade de likes. POST: Cria ou remove uma meta favorita'
                 },
                 {
                     'Endpoint': '/api/goals/:media_type/:is_active',
                     'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
                     'body': None,
                     'description': 'GET: Retorna todas as metas pelo tipo e status dela. (movies / games / books) / (active / inactive / done)'
                 },
                 {
                     'Endpoint': '/api/goals/user/:user_id',
                     'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
                     'body': None,
                     'description': 'GET: Retorna todas as metas do usuário.'
                 },
                 {
                     'Endpoint': '/api/goals/user/:user_id/:media_type',
                     'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
                     'body': None,
                     'description': 'GET: Retorna todas as metas de determinado tipo do usuário. (movies / games / books)'
                 },
                 {
                     'Endpoint': '/api/goals/user/:user_id/favorites',
                     'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
                     'body': None,
                     'description': 'GET: Retorna todas as metas favoritas do usuário.'
                 },
                 {
                     'Endpoint': '/api/goals/user/:user_id/:media_type/:is_active',
                     'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
                     'body': None,
                     'description': 'GET: Retorna todas as metas de determinado tipo e status do usuário. (movies / games / books) / (active / inactive / done)'
                 },
@@ -136,8 +149,9 @@ class UserUtils:
         user = User.objects.filter(id=current_user.id).first()
         if user is None:
             return Response(data={"error": "Nenhum usuário logado"}, status=status.HTTP_401_UNAUTHORIZED)
-        serializer = UserSerializer(user, many=False)
-        return Response(serializer.data)
+        
+        serialized_user = UserUtils.generate_user_token(request)        
+        return Response(serialized_user)
 
     def get_all_users():
         users = User.objects.all().order_by('first_name', 'last_name')
@@ -196,8 +210,8 @@ class UserUtils:
         user.save()
         login_auth(request, user)
 
-        serializer = UserSerializer(user, many=False)
-        return Response(serializer.data)
+        serialized_user = UserUtils.generate_user_token(request)
+        return Response(serialized_user)
 
     def update_user(request, user_id):
         data = request.data
@@ -215,9 +229,8 @@ class UserUtils:
         else:
             return Response(data={"error": "Usuário diferente do Usuário em sessão"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        serializer = UserSerializer(user, many=False)
-
-        return Response(serializer.data)
+        serialized_user = UserUtils.generate_user_token(request)
+        return Response(serialized_user)
 
     def delete_user(request, user_id):
         deleted_user = str(request.user)
@@ -240,29 +253,50 @@ class UserUtils:
 
         user = authenticate(username=username, password=password)
 
-        if user is not None:
-            login_auth(request, user)
-            serializer = UserSerializer(user, many=False)
-            return Response(serializer.data)
-
-        else:
+        if user is None:
             user_by_email = User.objects.filter(email=username).first()
+
             if user_by_email is not None:
                 username_email = user_by_email.username
                 user = authenticate(username=username_email, password=password)
-                if user is not None:
-                    login_auth(request, user)
-                    serializer = UserSerializer(user, many=False)
-                    return Response(serializer.data)
-                else:
+
+                if user is None:
                     return Response(data={"error": "Usuário ou senha inválidos"}, status=status.HTTP_401_UNAUTHORIZED)
+
             else:
-                return Response(data={"error": "Usuário ou senha inválidos"}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response(data={"error": "Usuário ou senha inválidos"}, status=status.HTTP_401_UNAUTHORIZED)        
+        
+        login_auth(request, user)
+        serialized_user = UserUtils.generate_user_token(request)
+
+        return Response(serialized_user)
 
     def logout(request):
         prev_user = str(request.user.username)
         logout_auth(request)
         return Response(data={"msg": f"{prev_user} deslogado"}, status=status.HTTP_200_OK)
+        
+    def generate_user_token(request):
+        user = request.user
+        serializer = UserSerializer(user, many=False)
+        refresh = RefreshToken.for_user(user)
+                
+        token = {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token)
+        }
+        serialized_user = {
+            'id': serializer.data['id'],
+            'username': serializer.data['username'],
+            'first_name': serializer.data['first_name'],
+            'last_name': serializer.data['last_name'],
+            'email': serializer.data['email'],
+            'last_login': serializer.data['last_login'],
+            'date_joined': serializer.data['date_joined'],
+            'token': token
+        }
+
+        return serialized_user
 
 
 class MediaTypeUtils:
@@ -422,6 +456,8 @@ class FavoriteGoalsUtils:
     def create_or_delete_favorite_goal(request):
         data = request.data
         user = request.user
+        print("TESTE")
+        print(user)
 
         user_id = user.id
         goal_id = data['goal']
