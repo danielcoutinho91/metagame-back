@@ -19,3 +19,8 @@ class Goal(models.Model):
 class FavoriteGoals(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     goal = models.ForeignKey(Goal, on_delete=models.CASCADE)
+
+class UserInfo(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    provider = models.CharField(max_length=30)
+    image_url = models.CharField(max_length=300)

@@ -1,11 +1,17 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField, SlugRelatedField
 from django.contrib.auth.models import User
-from .models import MediaType, Goal, FavoriteGoals
+from .models import MediaType, Goal, FavoriteGoals, UserInfo
+
+class UserInfoSerializer(ModelSerializer):
+    class Meta:
+        model = UserInfo
+        fields = ['provider', 'image_url']
 
 class UserSerializer(ModelSerializer):
+    userinfo = UserInfoSerializer(many=False)
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'last_login', 'date_joined']
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'last_login', 'date_joined', 'userinfo']
 
 class MediaTypeSerializer(ModelSerializer):
     class Meta:

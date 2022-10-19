@@ -300,8 +300,6 @@ def favorite_goals(request):
         return FavoriteGoalsUtils.get_all_favorite_goals(request)
     
     elif request.method == "POST":
-        print("TESTE")
-        print(request.user)
         return FavoriteGoalsUtils.create_or_delete_favorite_goal(request)
 
     else:
@@ -312,9 +310,6 @@ def favorite_goals(request):
 def favorite_goals_by_user(request, user_id):
     if request.method == 'GET':
         return FavoriteGoalsUtils.get_all_favorite_goals_by_user(request, user_id)
-    
-    elif request.method == "POST":
-            return FavoriteGoalsUtils.create_or_delete_favorite_goal(request, user_id)
 
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)

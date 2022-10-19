@@ -8,7 +8,7 @@ from datetime import date, datetime, timedelta
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .serializers import UserSerializer, MediaTypeSerializer, GoalSerializer, FavoriteGoalsSerializer, GoalTemplateSerializer
-from .models import FavoriteGoals, MediaType, Goal
+from .models import FavoriteGoals, MediaType, Goal, UserInfo
 
 class Utils:
     routes = [
@@ -23,21 +23,21 @@ class Utils:
                 {
                     'Endpoint': '/api/users',
                     'method': 'GET, POST',
-                    'body': {"username": "name", "email": "user_email@email.com", "first_name": "First", "last_name": "Last", "password": "senha", "provider": ""},
+                    'body': {"username": "name", "email": "user_email@email.com", "first_name": "First", "last_name": "Last", "password": "senha", "provider": "", "image_url": ""},
                     'description': 'GET: Retorna um array com todos os usuários do sistema, POST: Cria um novo usuário com os dados da requisição'
                 },
                 {
                     'Endpoint': '/api/users/:user_id',
                     'method': 'GET, PUT, DELETE',
                     'headers': {"Authorization": "Bearer token"},
-                    'body': {"username": "name", "email": "user_email@email.com", "first_name": "First", "last_name": "Last", "password": "senha"},
+                    'body': {"username": "name", "email": "user_email@email.com", "first_name": "First", "last_name": "Last", "password": "senha", "image_url": ""},
                     'description': 'GET: Retorna o usuário pelo id especificado, PUT: Atualiza o usuário com o id especificado, DELETE: Deleta o usuário com o id especificado'
                 },
                 {
                     'Endpoint': '/api/users/find/:username_or_email',
                     'method': 'GET, PUT',
                     'headers': {"Authorization": "Bearer token"},
-                    'body': {"username": "name", "email": "user_email@email.com", "first_name": "First", "last_name": "Last", "password": "senha"},
+                    'body': {"username": "name"},
                     'description': 'GET: Retorna o usuário pelo id especificado, PUT: Atualiza o usuário com o id especificado'
                 },
                 {
@@ -150,8 +150,8 @@ class UserUtils:
         if user is None:
             return Response(data={"error": "Nenhum usuário logado"}, status=status.HTTP_401_UNAUTHORIZED)
         
-        serialized_user = UserUtils.generate_user_token(request)        
-        return Response(serialized_user)
+        serializer = UserSerializer(user, many=False)     
+        return Response(serializer.data)
 
     def get_all_users():
         users = User.objects.all().order_by('first_name', 'last_name')
@@ -186,6 +186,7 @@ class UserUtils:
         email = data['email']
         password = data['password']
         provider = data['provider']
+        image_url = data['image_url']
 
         user_by_username = User.objects.filter(username=username).first()
         user_by_email = User.objects.filter(email=email).first()
@@ -208,6 +209,13 @@ class UserUtils:
             password=password
         )
         user.save()
+
+        userinfo = UserInfo.objects.create(
+            user_id = user.id,
+            provider=provider,
+            image_url=image_url
+        )
+        userinfo.save()
         login_auth(request, user)
 
         serialized_user = UserUtils.generate_user_token(request)
@@ -217,6 +225,7 @@ class UserUtils:
         data = request.data
         current_user = request.user
         user = User.objects.get(id=user_id)
+        userinfo = UserInfo.objects.get(user_id=user_id)
 
         if (str(current_user) == str(user.username)):
             user.username = data['username']
@@ -224,13 +233,15 @@ class UserUtils:
             user.last_name = data['last_name']
             user.email = data['email']
             user.set_password(data['password'])
+            userinfo.image_url = data['image_url']
             user.save()
+            userinfo.save()
             login_auth(request, user)
         else:
             return Response(data={"error": "Usuário diferente do Usuário em sessão"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        serialized_user = UserUtils.generate_user_token(request)
-        return Response(serialized_user)
+        serializer = UserSerializer(user, many=False)
+        return Response(serializer.data)
 
     def delete_user(request, user_id):
         deleted_user = str(request.user)
@@ -282,7 +293,7 @@ class UserUtils:
         refresh = RefreshToken.for_user(user)
                 
         token = {
-            'refresh': str(refresh),
+            # 'refresh': str(refresh),
             'access': str(refresh.access_token)
         }
         serialized_user = {
@@ -293,7 +304,8 @@ class UserUtils:
             'email': serializer.data['email'],
             'last_login': serializer.data['last_login'],
             'date_joined': serializer.data['date_joined'],
-            'token': token
+            'userinfo': serializer.data['userinfo'],
+            'token': token['access']
         }
 
         return serialized_user
