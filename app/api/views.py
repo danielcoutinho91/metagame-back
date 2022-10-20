@@ -1,9 +1,10 @@
 from django.http import HttpResponse
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from django.contrib.auth.decorators import login_required
-from .utils import Utils, UserUtils, MediaTypeUtils, GoalUtils
+# from django.contrib.auth.decorators import login_required
+from .utils import Utils, UserUtils, MediaTypeUtils, GoalUtils, FavoriteGoalsUtils
 
 @api_view(['GET'])
 def routes(request):
@@ -15,8 +16,8 @@ def routes(request):
 def unauthorized(request):
     return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def me(request):
     return UserUtils.get_me(request)
 
@@ -31,8 +32,8 @@ def user(request):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes((IsAuthenticated, ))
 def user_by_id(request, user_id):
     if request.method == 'GET':
         return UserUtils.get_user_by_id(request, user_id)
@@ -46,8 +47,8 @@ def user_by_id(request, user_id):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def user_by_username_or_email(request, username):
     if request.method == 'GET':
         return UserUtils.get_user_by_username_or_email(request, username)
@@ -72,9 +73,9 @@ def media_type(request):
 
 # GOAL ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET', 'POST'])
-def goal(request):
+@permission_classes((IsAuthenticated, ))
+def goal(request, format=None):
     if request.method == "GET":
         return GoalUtils.get_all_goals(0, 0)
 
@@ -84,8 +85,8 @@ def goal(request):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def active_goal(request):
     if request.method == "GET":
         return GoalUtils.get_all_goals(0, 1)
@@ -93,8 +94,8 @@ def active_goal(request):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def inactive_goal(request):
     if request.method == "GET":
         return GoalUtils.get_all_goals(0, 2)
@@ -102,8 +103,8 @@ def inactive_goal(request):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def done_goal(request):
     if request.method == "GET":
         return GoalUtils.get_all_goals(0, 3)
@@ -111,8 +112,8 @@ def done_goal(request):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def movie_goals(request):
     if request.method == "GET":
         return GoalUtils.get_all_goals(1, 0)
@@ -120,8 +121,8 @@ def movie_goals(request):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def game_goals(request):
     if request.method == "GET":
         return GoalUtils.get_all_goals(2, 0)
@@ -129,8 +130,8 @@ def game_goals(request):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def book_goals(request):
     if request.method == "GET":
         return GoalUtils.get_all_goals(3, 0)
@@ -138,8 +139,8 @@ def book_goals(request):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def movie_goals_by_activity(request, is_active):
     if request.method == "GET":
         if is_active == 'active':
@@ -153,8 +154,8 @@ def movie_goals_by_activity(request, is_active):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def game_goals_by_activity(request, is_active):
     if request.method == "GET":
         if is_active == 'active':
@@ -169,8 +170,8 @@ def game_goals_by_activity(request, is_active):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def book_goals_by_activity(request, is_active):
     if request.method == "GET":
         if is_active == 'active':
@@ -185,8 +186,8 @@ def book_goals_by_activity(request, is_active):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET', 'DELETE'])
+@permission_classes((IsAuthenticated, ))
 def goal_by_id(request, goal_id):
     if request.method == 'GET':
         return GoalUtils.get_goal_by_id(request, goal_id)
@@ -197,40 +198,40 @@ def goal_by_id(request, goal_id):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def goals_by_user(request, user_id):
     if request.method == 'GET':
         return GoalUtils.get_all_goals_by_user(request, 0, 0, user_id)
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def movie_goals_by_user(request, user_id):
     if request.method == 'GET':
         return GoalUtils.get_all_goals_by_user(request, 1, 0, user_id)
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def game_goals_by_user(request, user_id):
     if request.method == 'GET':
         return GoalUtils.get_all_goals_by_user(request, 2, 0, user_id)
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def book_goals_by_user(request, user_id):
     if request.method == 'GET':
         return GoalUtils.get_all_goals_by_user(request, 3, 0, user_id)
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def goals_by_user_and_activity(request, user_id, is_active):
     if request.method == 'GET':
         if is_active == 'active':
@@ -244,8 +245,8 @@ def goals_by_user_and_activity(request, user_id, is_active):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def movie_goals_by_user_and_activity(request, user_id, is_active):
     if request.method == 'GET':
         if is_active == 'active':
@@ -259,8 +260,8 @@ def movie_goals_by_user_and_activity(request, user_id, is_active):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def game_goals_by_user_and_activity(request, user_id, is_active):
     if request.method == 'GET':
         if is_active == 'active':
@@ -274,8 +275,8 @@ def game_goals_by_user_and_activity(request, user_id, is_active):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/api/unauthorized')
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def book_goals_by_user_and_activity(request, user_id, is_active):
     if request.method == 'GET':
         if is_active == 'active':
@@ -287,5 +288,28 @@ def book_goals_by_user_and_activity(request, user_id, is_active):
         else:
             return GoalUtils.get_all_goals_by_user(request, 3, 0, user_id)
         
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+# GOAL LIKES ------------------------------------------------------------------------------------------------------------------------------------------------------
+
+@api_view(['GET', 'POST'])
+@permission_classes((IsAuthenticated, ))
+def favorite_goals(request):
+    if request.method == 'GET':
+        return FavoriteGoalsUtils.get_all_favorite_goals(request)
+    
+    elif request.method == "POST":
+        return FavoriteGoalsUtils.create_or_delete_favorite_goal(request)
+
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET', 'POST'])
+@permission_classes((IsAuthenticated, ))
+def favorite_goals_by_user(request, user_id):
+    if request.method == 'GET':
+        return FavoriteGoalsUtils.get_all_favorite_goals_by_user(request, user_id)
+
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
