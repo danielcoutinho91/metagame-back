@@ -21,6 +21,12 @@ class Utils:
                     'description': 'Retorna um array routes'
                 },
                 {
+                    'Endpoint': '/api/me',
+                    'method': 'GET',
+                    'body': None,
+                    'description': 'Retorna um array com as inforamações do usuário autenticado'
+                },
+                {
                     'Endpoint': '/api/users',
                     'method': 'GET, POST',
                     'body': {"username": "name", "email": "user_email@email.com", "first_name": "First", "last_name": "Last", "password": "senha", "provider": "", "image_url": ""},
@@ -198,7 +204,6 @@ class UserUtils:
             return Response(data={"error": "Username já cadastrado"}, status=status.HTTP_401_UNAUTHORIZED)
 
         if (provider in Utils.providers):
-            username = email
             password = email + f"_[{provider}]"
 
         user = User.objects.create_user(
