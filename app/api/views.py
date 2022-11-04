@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 # from django.contrib.auth.decorators import login_required
-from .utils import Utils, UserUtils, MediaTypeUtils, GoalUtils, FavoriteGoalsUtils
+from .utils import Utils, UserUtils, MediaTypeUtils, GoalUtils, FavoriteGoalsUtils, MediaUtils
 
 @api_view(['GET'])
 def routes(request):
@@ -75,7 +75,7 @@ def media_type(request):
 
 @api_view(['GET', 'POST'])
 @permission_classes((IsAuthenticated, ))
-def goal(request, format=None):
+def goal(request):
     if request.method == "GET":
         return GoalUtils.get_all_goals(0, 0)
 
@@ -148,7 +148,7 @@ def movie_goals_by_activity(request, is_active):
         elif is_active == 'inactive':
             return GoalUtils.get_all_goals(1, 2)
         elif is_active == 'done':
-            return GoalUtils.get_all_goals(3, 3)
+            return GoalUtils.get_all_goals(1, 3)
         else:
             return GoalUtils.get_all_goals(1, 0)
     else:
@@ -311,5 +311,98 @@ def favorite_goals_by_user(request, user_id):
     if request.method == 'GET':
         return FavoriteGoalsUtils.get_all_favorite_goals_by_user(request, user_id)
 
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+# MEDIA -----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+@api_view(['GET', 'POST'])
+@permission_classes((IsAuthenticated, ))
+def media(request, format=None):
+    if request.method == "GET":
+        return MediaUtils.get_all_medias(0)
+
+    elif request.method == "POST":
+        return MediaUtils.create_media(request)
+
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+def movie_medias(request):
+    if request.method == "GET":
+        return MediaUtils.get_all_medias(1)
+
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+def game_medias(request):
+    if request.method == "GET":
+        return MediaUtils.get_all_medias(2)
+
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+def book_medias(request):
+    if request.method == "GET":
+        return MediaUtils.get_all_medias(3)
+
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET', 'DELETE'])
+@permission_classes((IsAuthenticated, ))
+def media_by_id(request, media_id):
+    if request.method == 'GET':
+        return MediaUtils.get_media_by_id(request, media_id)
+
+    # elif request.method == 'DELETE':
+    #     return MediaUtils.delete_media(request, media_id)
+
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+def medias_by_user(request, user_id):
+    if request.method == 'GET':
+        return MediaUtils.get_all_medias_by_user(request, 0, user_id)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+def movie_medias_by_user(request, user_id):
+    if request.method == 'GET':
+        return MediaUtils.get_all_medias_by_user(request, 1, user_id)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+def game_medias_by_user(request, user_id):
+    if request.method == 'GET':
+        return MediaUtils.get_all_medias_by_user(request, 2, user_id)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+def book_medias_by_user(request, user_id):
+    if request.method == 'GET':
+        return MediaUtils.get_all_medias_by_user(request, 3, user_id)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+def medias_by_goal(request, goal_id):
+    if request.method == 'GET':
+        return MediaUtils.get_all_medias_by_goal(request, goal_id)
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)

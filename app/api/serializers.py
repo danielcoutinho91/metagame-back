@@ -1,6 +1,6 @@
-from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField, SlugRelatedField
+from rest_framework.serializers import ModelSerializer
 from django.contrib.auth.models import User
-from .models import MediaType, Goal, FavoriteGoals, UserInfo
+from .models import MediaType, Goal, FavoriteGoals, UserInfo, Media
 
 class UserInfoSerializer(ModelSerializer):
     class Meta:
@@ -31,4 +31,9 @@ class GoalTemplateSerializer(ModelSerializer):
 class FavoriteGoalsSerializer(ModelSerializer):
     class Meta:
         model = FavoriteGoals
+        fields = '__all__'
+
+class MediaSerializer(ModelSerializer):
+    class Meta:
+        model = Media
         fields = '__all__'

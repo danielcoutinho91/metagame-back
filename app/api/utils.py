@@ -1,3 +1,4 @@
+from http.client import HTTPResponse
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as login_auth
 from django.contrib.auth import logout as logout_auth
@@ -7,8 +8,8 @@ from rest_framework.response import Response
 from datetime import date, datetime, timedelta
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import UserSerializer, MediaTypeSerializer, GoalSerializer, FavoriteGoalsSerializer, GoalTemplateSerializer
-from .models import FavoriteGoals, MediaType, Goal, UserInfo
+from .serializers import UserSerializer, MediaTypeSerializer, GoalSerializer, FavoriteGoalsSerializer, GoalTemplateSerializer, MediaSerializer
+from .models import FavoriteGoals, MediaType, Goal, UserInfo, Media
 
 class Utils:
     routes = [
@@ -493,3 +494,86 @@ class FavoriteGoalsUtils:
 
         serializer = FavoriteGoalsSerializer(goal_like, many=False)
         return Response(serializer.data)
+
+class MediaUtils:
+    def get_all_medias(mediatype_id):
+        medias = Media.objects.all().order_by('-register_date')
+
+        if mediatype_id > 0:
+            medias = medias.filter(mediatype_id=mediatype_id).order_by(
+                '-register_date')
+
+        serializer = MediaSerializer(medias, many=True)
+        return Response(serializer.data)
+
+    def get_media_by_id(request, media_id):
+        try:
+            media = Media.objects.get(id=media_id)
+            serializer = MediaSerializer(media, many=False)
+        except:
+            return Response(data={"error": "Nenhuma meta encontrada"}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response(serializer.data)
+
+    def get_all_medias_by_user(request, mediatype_id, user_id):
+        medias = Media.objects.filter(user_id=user_id).order_by('-register_date')
+
+        if mediatype_id > 0:
+            medias = medias.filter(mediatype_id=mediatype_id).order_by(
+                '-register_date')
+
+        serializer = MediaSerializer(medias, many=True)
+        return Response(serializer.data)
+    
+    def get_all_medias_by_goal(request, goal_id):
+        medias = Media.objects.filter(goal_id=goal_id).order_by('-register_date')
+
+        serializer = MediaSerializer(medias, many=True)
+        return Response(serializer.data)
+
+    def create_media(request):
+        data = request.data
+        user = request.user
+        user_id = user.id
+
+        mediatype_id = data['mediatype']
+        id_on_api = data['id_on_api']
+
+        mediatype = MediaType.objects.get(id=mediatype_id)
+        active_goal_by_type = Goal.objects.filter(mediatype=mediatype, is_active=True, user_id=user_id).first()
+
+        if active_goal_by_type is not None:
+            objective_quantity = active_goal_by_type.objective_quantity
+            current_quantity = active_goal_by_type.current_quantity + 1
+            is_active = active_goal_by_type.is_active
+            is_done = active_goal_by_type.is_done
+            limit_date = active_goal_by_type.limit_date
+
+            if current_quantity >= objective_quantity:
+                end_date = date.today()
+                is_active = False
+                if date.today() <= limit_date:
+                    is_done = True
+            
+            active_goal_by_type.current_quantity = current_quantity
+            active_goal_by_type.is_active = is_active
+            active_goal_by_type.is_done = is_done            
+            if is_active:
+                active_goal_by_type.end_date = end_date
+            active_goal_by_type.save()            
+
+        media = Media.objects.create(
+            user=user,
+            mediatype=mediatype,
+            goal=active_goal_by_type,
+            id_on_api=id_on_api,
+        )
+        media.save()
+
+        serializer = MediaSerializer(media, many=False)
+        return Response(serializer.data)
+
+    # def delete_goal(request, goal_id):
+    #     goal = Goal.objects.get(id=goal_id)
+    #     goal.delete()
+    #     return Response(data={"msg": "Meta deletada"}, status=status.HTTP_200_OK)

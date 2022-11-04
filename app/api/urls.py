@@ -36,4 +36,16 @@ urlpatterns = [
     path('goals/user/<str:user_id>/movies/<str:is_active>', views.movie_goals_by_user_and_activity, name='movie_goals_by_user_and_activity'),
     path('goals/user/<str:user_id>/games/<str:is_active>', views.game_goals_by_user_and_activity, name='game_goals_by_user_and_activity'),
     path('goals/user/<str:user_id>/books/<str:is_active>', views.book_goals_by_user_and_activity, name='book_goals_by_user_and_activity'),
+
+    path('medias', views.media, name='media'),
+    path('medias/movies', views.movie_medias, name='movie_medias'),
+    path('medias/games', views.game_medias, name='game_medias'),
+    path('medias/books', views.book_medias, name='book_medias'),
+    path('medias/<str:media_id>', views.media_by_id, name='media_by_id'),
+    path('medias/user/<str:user_id>', views.medias_by_user, name='medias_by_user'),
+    path('medias/user/<str:user_id>/movies', views.movie_medias_by_user, name='movie_medias_by_user'),
+    path('medias/user/<str:user_id>/games', views.game_medias_by_user, name='game_medias_by_user'),
+    path('medias/user/<str:user_id>/books', views.book_medias_by_user, name='book_medias_by_user'),
+    path('medias/goal/<str:goal_id>', views.medias_by_goal, name='medias_by_goal'),
+
 ]
