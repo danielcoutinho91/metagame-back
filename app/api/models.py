@@ -24,3 +24,9 @@ class UserInfo(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     provider = models.CharField(max_length=30)
     image_url = models.CharField(max_length=300)
+
+class Media(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    goal = models.ForeignKey(Goal, on_delete=models.CASCADE)
+    id_on_api = models.BigIntegerField()
+    register_date = models.DateField(auto_now_add=True)

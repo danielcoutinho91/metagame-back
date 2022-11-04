@@ -473,8 +473,6 @@ class FavoriteGoalsUtils:
     def create_or_delete_favorite_goal(request):
         data = request.data
         user = request.user
-        print("TESTE")
-        print(user)
 
         user_id = user.id
         goal_id = data['goal']
