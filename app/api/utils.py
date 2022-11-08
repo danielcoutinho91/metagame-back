@@ -81,7 +81,7 @@ class Utils:
                     'method': 'GET, DELETE',
                     'headers': {"Authorization": "Bearer token"},
                     'body': None,
-                    'description': 'GET: Retorna a meta pelo id especificao, DELETE: Deleta a meta com o id especificado'
+                    'description': 'GET: Retorna a meta pelo id especificado, DELETE: Deleta a meta com o id especificado'
                 },
                 {
                     'Endpoint': '/api/goals/:is_active',
@@ -138,6 +138,78 @@ class Utils:
                     'headers': {"Authorization": "Bearer token"},
                     'body': None,
                     'description': 'GET: Retorna todas as metas de determinado tipo e status do usuário. (movies / games / books) / (active / inactive / done)'
+                },
+            ],
+            "medias": [
+                {
+                    'Endpoint': '/api/medias',
+                    'method': 'GET, POST',
+                    'headers': {"Authorization": "Bearer token"},
+                    'body': {"mediatype": "mediatype_id", "id_on_api": "id_on_api"},
+                    'description': 'GET: Retorna um array com todos os registros de mídias do sistema, POST: Cria um novo registro de mídia com os dados da requisição'
+                },
+                {
+                    'Endpoint': '/api/medias/:media_id',
+                    'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
+                    'body': None,
+                    'description': 'GET: Retorna o registro de mídias pelo id especificado'
+                },
+                {
+                    'Endpoint': '/api/medias/movies',
+                    'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
+                    'body': None,
+                    'description': 'GET: Retorna todos os registros de filmes'
+                },
+                {
+                    'Endpoint': '/api/medias/games',
+                    'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
+                    'body': None,
+                    'description': 'GET: Retorna todos os registros de jogos'
+                },
+                {
+                    'Endpoint': '/api/medias/books',
+                    'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
+                    'body': None,
+                    'description': 'GET: Retorna todos os registros de livros'
+                },
+                {
+                    'Endpoint': '/api/medias/user/:user_id',
+                    'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
+                    'body': None,
+                    'description': 'GET: Retorna todos os registros de mídias por usuário'
+                },
+                {
+                    'Endpoint': '/api/medias/user/:user_id/movies',
+                    'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
+                    'body': None,
+                    'description': 'GET: Retorna todos os registros de filmes por usuário'
+                },
+                {
+                    'Endpoint': '/api/medias/user/:user_id/games',
+                    'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
+                    'body': None,
+                    'description': 'GET: Retorna todos os registros de jogos por usuário'
+                },
+                {
+                    'Endpoint': '/api/medias/user/:user_id/books',
+                    'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
+                    'body': None,
+                    'description': 'GET: Retorna todos os registros de livros por usuário'
+                },
+                {
+                    'Endpoint': '/api/medias/goal/:goal_id',
+                    'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
+                    'body': None,
+                    'description': 'GET: Retorna todos os registros de mídias por meta'
                 },
             ]
         }
