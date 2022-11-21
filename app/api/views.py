@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 # from django.contrib.auth.decorators import login_required
-from .utils import Utils, UserUtils, MediaTypeUtils, GoalUtils, FavoriteGoalsUtils, MediaUtils
+from .utils import Utils, UserUtils, MediaTypeUtils, GoalUtils, FavoriteGoalsUtils, MediaUtils, RankingUtils
 
 @api_view(['GET'])
 def routes(request):
@@ -406,3 +406,27 @@ def medias_by_goal(request, goal_id):
         return MediaUtils.get_all_medias_by_goal(request, goal_id)
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
+
+# RANKING ---------------------------------------------------------------------------------------------------------------------------------------------------------
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+def ranking(request):
+    if request.method == 'GET':
+        return RankingUtils.get_ranking(request)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+def ranking_by_type(request, mediatype):
+    if request.method == 'GET':
+        if mediatype == 'movies':
+            return RankingUtils.get_ranking_by_type(request, 1)
+        if mediatype == 'games':
+            return RankingUtils.get_ranking_by_type(request, 2)
+        if mediatype == 'books':
+            return RankingUtils.get_ranking_by_type(request, 3)
+        return RankingUtils.get_ranking(request)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+        

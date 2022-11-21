@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login as login_auth
 from django.contrib.auth import logout as logout_auth
 from django.contrib.auth.models import User
+from django.db import connection
 from rest_framework import status
 from rest_framework.response import Response
 from datetime import date, datetime, timedelta
@@ -211,6 +212,22 @@ class Utils:
                     'body': None,
                     'description': 'GET: Retorna todos os registros de mídias por meta'
                 },
+            ],
+            "ranking": [
+                {
+                    'Endpoint': '/api/ranking',
+                    'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
+                    'body': {},
+                    'description': 'GET: Retorna um array com um ranking geral'
+                },
+                {
+                    'Endpoint': '/api/ranking/:media_type',
+                    'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
+                    'body': {},
+                    'description': 'GET: Retorna um array com um ranking geral por categoria (movies / games / books)'
+                }
             ]
         }
     ]
@@ -277,7 +294,7 @@ class UserUtils:
             return Response(data={"error": "Username já cadastrado"}, status=status.HTTP_401_UNAUTHORIZED)
 
         if (provider in Utils.providers):
-            password = email + f"_[{provider}]"
+            password = password + f"_[{provider}]"
 
         user = User.objects.create_user(
             username=username,
@@ -338,7 +355,7 @@ class UserUtils:
         password = data['password']
         provider = data['provider']
         if provider in Utils.providers:
-            password = username + f"_[{provider}]"
+            password = password + f"_[{provider}]"
 
         user = authenticate(username=username, password=password)
 
@@ -630,7 +647,7 @@ class MediaUtils:
             active_goal_by_type.current_quantity = current_quantity
             active_goal_by_type.is_active = is_active
             active_goal_by_type.is_done = is_done            
-            if is_active:
+            if not is_active:
                 active_goal_by_type.end_date = end_date
             active_goal_by_type.save()            
 
@@ -649,3 +666,78 @@ class MediaUtils:
     #     goal = Goal.objects.get(id=goal_id)
     #     goal.delete()
     #     return Response(data={"msg": "Meta deletada"}, status=status.HTTP_200_OK)
+
+class RankingUtils:
+
+    def dictfetchall(cursor):
+        columns = [col[0] for col in cursor.description]
+        return [
+            dict(zip(columns, row))
+            for row in cursor.fetchall()
+        ]
+
+    def get_ranking(request):
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT SUM(points) as points, user_id FROM ( " +
+                "   (select " +
+                "       count(id) as points, user_id " +
+                "   from " +
+                "       api_media " +
+                "   group by user_id) " +
+                "   union " +
+                "   (select " +
+                "       sum(current_quantity) as points, user_id " +
+                "   from " +
+                "       api_goal " +
+                "   where is_done = true " +
+                "   group by user_id) " +
+                "   union " +
+                "   (select " +
+                "       sum(current_quantity)*0.5 as undone_goal_points, user_id " +
+                "   from " +
+                "       api_goal "+
+                "   where is_done = false and is_active = false " +
+                "   group by user_id) " +
+                ") as points_table " +
+                "group by user_id " + 
+                "order by points desc "
+            )
+            result = RankingUtils.dictfetchall(cursor)
+
+        print(result)
+        return Response(result)
+
+    def get_ranking_by_type(request, mediatype_id):
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT SUM(points) as points, user_id FROM ( " +
+                "   (select " +
+                "       count(id) as points, user_id " +
+                "   from " +
+                "       api_media " +
+                "   where mediatype_id = %s " +
+                "   group by user_id) " +
+                "   union " +
+                "   (select " +
+                "       sum(current_quantity) as points, user_id " +
+                "   from " +
+                "       api_goal " +
+                "   where is_done = true and mediatype_id = %s " +
+                "   group by user_id) " +
+                "   union " +
+                "   (select " +
+                "       sum(current_quantity)*0.5 as undone_goal_points, user_id " +
+                "   from " +
+                "       api_goal "+
+                "   where is_done = false and is_active = false and mediatype_id = %s " +
+                "   group by user_id) " +
+                ") as points_table " +
+                "group by user_id " + 
+                "order by points desc ", 
+                [mediatype_id, mediatype_id, mediatype_id]
+            )
+            result = RankingUtils.dictfetchall(cursor)
+
+        print(result)
+        return Response(result)

@@ -48,4 +48,7 @@ urlpatterns = [
     path('medias/user/<str:user_id>/books', views.book_medias_by_user, name='book_medias_by_user'),
     path('medias/goal/<str:goal_id>', views.medias_by_goal, name='medias_by_goal'),
 
+    path('ranking', views.ranking, name='ranking'),
+    path('ranking/<str:mediatype>', views.ranking_by_type, name='ranking_by_type')
+
 ]
