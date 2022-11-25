@@ -146,7 +146,7 @@ class Utils:
                     'Endpoint': '/api/medias',
                     'method': 'GET, POST',
                     'headers': {"Authorization": "Bearer token"},
-                    'body': {"mediatype": "mediatype_id", "id_on_api": "id_on_api"},
+                    'body': {"mediatype": "mediatype_id", "id_on_api": "id_on_api", "image_on_api": "image_on_api"},
                     'description': 'GET: Retorna um array com todos os registros de mídias do sistema, POST: Cria um novo registro de mídia com os dados da requisição'
                 },
                 {
@@ -627,6 +627,7 @@ class MediaUtils:
 
         mediatype_id = data['mediatype']
         id_on_api = data['id_on_api']
+        image_on_api = data['image_on_api']
 
         mediatype = MediaType.objects.get(id=mediatype_id)
         active_goal_by_type = Goal.objects.filter(mediatype=mediatype, is_active=True, user_id=user_id).first()
@@ -656,6 +657,7 @@ class MediaUtils:
             mediatype=mediatype,
             goal=active_goal_by_type,
             id_on_api=id_on_api,
+            image_on_api=image_on_api
         )
         media.save()
 

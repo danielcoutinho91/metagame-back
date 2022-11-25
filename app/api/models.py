@@ -30,4 +30,5 @@ class Media(models.Model):
     goal = models.ForeignKey(Goal, on_delete=models.CASCADE, blank=True, null=True)
     mediatype = models.ForeignKey(MediaType, on_delete=models.CASCADE)
     id_on_api = models.CharField(max_length=300)
+    image_on_api = models.TextField()
     register_date = models.DateField(auto_now_add=True)
