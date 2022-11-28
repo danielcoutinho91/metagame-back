@@ -414,7 +414,47 @@ class MediaTypeUtils:
 
 
 class GoalUtils:
-    def get_all_goals(mediatype_id, is_active):
+    def get_complete_goal_serializer(request, serializer):
+        for data in serializer.data:
+            creator_id = data["creator"]
+            creator = User.objects.filter(id=creator_id).first()
+            data['creator'] = {"id": creator_id, "username": creator.username, "image_url": creator.userinfo.image_url}
+            data.pop('creator_id', default=None)
+            
+            user_id = request.user.id
+            goal_id = data['id']
+            goal_like = FavoriteGoals.objects.filter(user_id=user_id, goal_id=goal_id).first()
+            data['is_liked'] = False
+            if goal_like is not None:
+                data['is_liked'] = True
+
+            limit_date = datetime.strptime(data['limit_date'], '%Y-%m-%d').date()
+            start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date()
+            limit_days = (limit_date - start_date).days
+            data['limit_days'] = limit_days
+
+            data['likes'] = GoalUtils.get_goal_likes(goal_id)
+        return serializer
+
+    def get_goal_likes(goal_id):
+        goal_likes = Goal.objects.raw(
+                "SELECT " +
+                "   api_goal.id, " +
+                "   count(api_favoritegoals.goal_id) as likes " +
+                "FROM " +
+                "   api_goal " +
+                "INNER JOIN api_favoritegoals ON api_favoritegoals.goal_id = api_goal.id " +
+                "WHERE api_goal.id = %s"
+                "GROUP BY " +
+                "   api_goal.id ", [goal_id]
+            )        
+            
+        likes = 0
+        if len(goal_likes) > 0:
+            likes = goal_likes[0].likes
+        return likes
+
+    def get_all_goals(request, mediatype_id, is_active):
         goals = Goal.objects.all().order_by('-start_date')
 
         if mediatype_id > 0:
@@ -433,16 +473,38 @@ class GoalUtils:
                     '-start_date', '-is_active')
 
         serializer = GoalSerializer(goals, many=True)
-        return Response(serializer.data)
+        complete_serializer = GoalUtils.get_complete_goal_serializer(request, serializer)
+
+        return Response(complete_serializer.data)
 
     def get_goal_by_id(request, goal_id):
         try:
             goal = Goal.objects.get(id=goal_id)
             serializer = GoalSerializer(goal, many=False)
+
+            data = serializer.data
+            creator_id = data["creator"]
+            creator = User.objects.filter(id=creator_id).first()
+            data['creator'] = {"id": creator_id, "username": creator.username, "image_url": creator.userinfo.image_url}
+            data.pop('creator_id', default=None)
+            
+            user_id = request.user.id
+            goal_id = data['id']
+            goal_like = FavoriteGoals.objects.filter(user_id=user_id, goal_id=goal_id).first()
+            data['is_liked'] = False
+            if goal_like is not None:
+                data['is_liked'] = True
+
+            limit_date = datetime.strptime(data['limit_date'], '%Y-%m-%d').date()
+            start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date()
+            limit_days = (limit_date - start_date).days
+            data['limit_days'] = limit_days
+
+            data['likes'] = GoalUtils.get_goal_likes(goal_id)
         except:
             return Response(data={"error": "Nenhuma meta encontrada"}, status=status.HTTP_404_NOT_FOUND)
 
-        return Response(serializer.data)
+        return Response(data)
 
     def get_all_goals_by_user(request, mediatype_id, is_active, user_id):
         goals = Goal.objects.filter(user_id=user_id).order_by('-start_date')
@@ -463,7 +525,8 @@ class GoalUtils:
                     '-start_date', '-is_active')
 
         serializer = GoalSerializer(goals, many=True)
-        return Response(serializer.data)
+        complete_serializer = GoalUtils.get_complete_goal_serializer(request, serializer)
+        return Response(complete_serializer.data)
 
     def create_goal(request):
         data = request.data
@@ -533,8 +596,8 @@ class FavoriteGoalsUtils:
         serializer = GoalTemplateSerializer(goals, many=True)
         for i, data in enumerate(serializer.data):
             creator_id = data["creator_id"]
-            user = User.objects.filter(id=creator_id).first()
-            data['creator'] = {"id": creator_id, "username": user.username, "image_url": user.userinfo.image_url}
+            creator = User.objects.filter(id=creator_id).first()
+            data['creator'] = {"id": creator_id, "username": creator.username, "image_url": creator.userinfo.image_url}
             data.pop('creator_id', default=None)
             
             user_id = request.user.id
@@ -567,8 +630,8 @@ class FavoriteGoalsUtils:
         serializer = GoalTemplateSerializer(goals, many=True)
         for data in serializer.data:            
             creator_id = data["creator_id"]
-            user = User.objects.filter(id=creator_id).first()
-            data['creator'] = {"id": creator_id, "username": user.username, "image_url": user.userinfo.image_url}
+            creator = User.objects.filter(id=creator_id).first()
+            data['creator'] = {"id": creator_id, "username": creator.username, "image_url": creator.userinfo.image_url}
             data.pop('creator_id', default=None)
 
             limit_date = datetime.strptime(data['limit_date'], '%Y-%m-%d').date()

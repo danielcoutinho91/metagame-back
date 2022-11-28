@@ -77,7 +77,7 @@ def media_type(request):
 @permission_classes((IsAuthenticated, ))
 def goal(request):
     if request.method == "GET":
-        return GoalUtils.get_all_goals(0, 0)
+        return GoalUtils.get_all_goals(request, 0, 0)
 
     elif request.method == "POST":
         return GoalUtils.create_goal(request)
@@ -89,7 +89,7 @@ def goal(request):
 @permission_classes((IsAuthenticated, ))
 def active_goal(request):
     if request.method == "GET":
-        return GoalUtils.get_all_goals(0, 1)
+        return GoalUtils.get_all_goals(request, 0, 1)
 
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -98,7 +98,7 @@ def active_goal(request):
 @permission_classes((IsAuthenticated, ))
 def inactive_goal(request):
     if request.method == "GET":
-        return GoalUtils.get_all_goals(0, 2)
+        return GoalUtils.get_all_goals(request, 0, 2)
 
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -107,7 +107,7 @@ def inactive_goal(request):
 @permission_classes((IsAuthenticated, ))
 def done_goal(request):
     if request.method == "GET":
-        return GoalUtils.get_all_goals(0, 3)
+        return GoalUtils.get_all_goals(request, 0, 3)
 
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -116,7 +116,7 @@ def done_goal(request):
 @permission_classes((IsAuthenticated, ))
 def movie_goals(request):
     if request.method == "GET":
-        return GoalUtils.get_all_goals(1, 0)
+        return GoalUtils.get_all_goals(request, 1, 0)
 
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -125,7 +125,7 @@ def movie_goals(request):
 @permission_classes((IsAuthenticated, ))
 def game_goals(request):
     if request.method == "GET":
-        return GoalUtils.get_all_goals(2, 0)
+        return GoalUtils.get_all_goals(request, 2, 0)
 
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -134,7 +134,7 @@ def game_goals(request):
 @permission_classes((IsAuthenticated, ))
 def book_goals(request):
     if request.method == "GET":
-        return GoalUtils.get_all_goals(3, 0)
+        return GoalUtils.get_all_goals(request, 3, 0)
 
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -144,13 +144,13 @@ def book_goals(request):
 def movie_goals_by_activity(request, is_active):
     if request.method == "GET":
         if is_active == 'active':
-            return GoalUtils.get_all_goals(1, 1)
+            return GoalUtils.get_all_goals(request, 1, 1)
         elif is_active == 'inactive':
-            return GoalUtils.get_all_goals(1, 2)
+            return GoalUtils.get_all_goals(request, 1, 2)
         elif is_active == 'done':
-            return GoalUtils.get_all_goals(1, 3)
+            return GoalUtils.get_all_goals(request, 1, 3)
         else:
-            return GoalUtils.get_all_goals(1, 0)
+            return GoalUtils.get_all_goals(request, 1, 0)
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -159,13 +159,13 @@ def movie_goals_by_activity(request, is_active):
 def game_goals_by_activity(request, is_active):
     if request.method == "GET":
         if is_active == 'active':
-            return GoalUtils.get_all_goals(2, 1)
+            return GoalUtils.get_all_goals(request, 2, 1)
         elif is_active == 'inactive':
-            return GoalUtils.get_all_goals(2, 2)
+            return GoalUtils.get_all_goals(request, 2, 2)
         elif is_active == 'done':
-            return GoalUtils.get_all_goals(2, 3)
+            return GoalUtils.get_all_goals(request, 2, 3)
         else:
-            return GoalUtils.get_all_goals(2, 0)
+            return GoalUtils.get_all_goals(request, 2, 0)
 
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -175,13 +175,13 @@ def game_goals_by_activity(request, is_active):
 def book_goals_by_activity(request, is_active):
     if request.method == "GET":
         if is_active == 'active':
-            return GoalUtils.get_all_goals(3, 1)
+            return GoalUtils.get_all_goals(request, 3, 1)
         elif is_active == 'inactive':
-            return GoalUtils.get_all_goals(3, 2)
+            return GoalUtils.get_all_goals(request, 3, 2)
         elif is_active == 'done':
-            return GoalUtils.get_all_goals(3, 3)
+            return GoalUtils.get_all_goals(request, 3, 3)
         else:
-            return GoalUtils.get_all_goals(3, 0)
+            return GoalUtils.get_all_goals(request, 3, 0)
 
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -318,7 +318,7 @@ def favorite_goals_by_user(request, user_id):
 
 @api_view(['GET', 'POST'])
 @permission_classes((IsAuthenticated, ))
-def media(request, format=None):
+def media(request):
     if request.method == "GET":
         return MediaUtils.get_all_medias(0)
 
