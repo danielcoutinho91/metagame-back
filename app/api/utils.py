@@ -102,7 +102,7 @@ class Utils:
                     'Endpoint': '/api/goals/favorites',
                     'method': 'GET, POST',
                     'headers': {"Authorization": "Bearer token"},
-                    'body': None,
+                    'body': {"goal": "goal_id"},
                     'description': 'GET: Retorna todas as metas favoritas ordenadas por quantidade de likes. POST: Cria ou remove uma meta favorita'
                 },
                 {
@@ -531,6 +531,11 @@ class FavoriteGoalsUtils:
 
         serializer = GoalTemplateSerializer(goals, many=True)
         for i, data in enumerate(serializer.data):
+            creator_id = data["creator_id"]
+            user = User.objects.filter(id=creator_id).first()
+            data['username'] = user.username
+            data['image_url'] = user.userinfo.image_url
+
             limit_date = datetime.strptime(data['limit_date'], '%Y-%m-%d').date()
             start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date()
             limit_days = (limit_date - start_date).days
@@ -552,7 +557,12 @@ class FavoriteGoalsUtils:
         )
 
         serializer = GoalTemplateSerializer(goals, many=True)
-        for data in serializer.data:
+        for data in serializer.data:            
+            creator_id = data["creator_id"]
+            user = User.objects.filter(id=creator_id).first()
+            data['username'] = user.username
+            data['image_url'] = user.userinfo.image_url
+
             limit_date = datetime.strptime(data['limit_date'], '%Y-%m-%d').date()
             start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date()
             limit_days = (limit_date - start_date).days
@@ -707,7 +717,6 @@ class RankingUtils:
             )
             result = RankingUtils.dictfetchall(cursor)
 
-        print(result)
         return Response(result)
 
     def get_ranking_by_type(request, mediatype_id):
@@ -741,5 +750,4 @@ class RankingUtils:
             )
             result = RankingUtils.dictfetchall(cursor)
 
-        print(result)
         return Response(result)
