@@ -519,7 +519,8 @@ class FavoriteGoalsUtils:
     def get_all_favorite_goals(request):
         goals = Goal.objects.raw(
             "SELECT " +
-            "   api_goal.id, api_goal.objective_quantity, (api_goal.limit_date - api_goal.start_date) as limit_days, api_goal.mediatype_id, creator_id, count(api_favoritegoals.goal_id) as likes " +
+            "   api_goal.id, api_goal.objective_quantity, (api_goal.limit_date - api_goal.start_date) as limit_days, api_goal.mediatype_id, creator_id, api_goal.user_id as user_id, " +
+            "   count(api_favoritegoals.goal_id) as likes " +
             "FROM " +
             "   api_goal " +
             "INNER JOIN api_favoritegoals ON api_favoritegoals.goal_id = api_goal.id " +
@@ -533,8 +534,15 @@ class FavoriteGoalsUtils:
         for i, data in enumerate(serializer.data):
             creator_id = data["creator_id"]
             user = User.objects.filter(id=creator_id).first()
-            data['username'] = user.username
-            data['image_url'] = user.userinfo.image_url
+            data['creator'] = {"id": creator_id, "username": user.username, "image_url": user.userinfo.image_url}
+            data.pop('creator_id', default=None)
+            
+            user_id = request.user.id
+            goal_id = data['id']
+            goal_like = FavoriteGoals.objects.filter(user_id=user_id, goal_id=goal_id).first()
+            data['is_liked'] = False
+            if goal_like is not None:
+                data['is_liked'] = True
 
             limit_date = datetime.strptime(data['limit_date'], '%Y-%m-%d').date()
             start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date()
@@ -560,8 +568,8 @@ class FavoriteGoalsUtils:
         for data in serializer.data:            
             creator_id = data["creator_id"]
             user = User.objects.filter(id=creator_id).first()
-            data['username'] = user.username
-            data['image_url'] = user.userinfo.image_url
+            data['creator'] = {"id": creator_id, "username": user.username, "image_url": user.userinfo.image_url}
+            data.pop('creator_id', default=None)
 
             limit_date = datetime.strptime(data['limit_date'], '%Y-%m-%d').date()
             start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date()

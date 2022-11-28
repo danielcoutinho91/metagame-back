@@ -26,7 +26,7 @@ class GoalSerializer(ModelSerializer):
 class GoalTemplateSerializer(ModelSerializer):
     class Meta:
         model = Goal
-        fields = ['id', 'objective_quantity', 'limit_date', 'start_date', 'mediatype_id', 'creator_id']
+        fields = ['id', 'objective_quantity', 'limit_date', 'start_date', 'mediatype_id', 'creator_id', 'user_id']
 
 class FavoriteGoalsSerializer(ModelSerializer):
     class Meta:
