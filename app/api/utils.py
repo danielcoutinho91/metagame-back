@@ -322,12 +322,18 @@ class UserUtils:
         user = User.objects.get(id=user_id)
         userinfo = UserInfo.objects.get(user_id=user_id)
 
+        if 'password' in data:            
+            password = data['password']
+        else:
+            password = ""
+
         if (str(current_user) == str(user.username)):
             user.username = data['username']
             user.first_name = data['first_name']
             user.last_name = data['last_name']
             user.email = data['email']
-            user.set_password(data['password'])
+            if password != "":
+                user.set_password(password)
             userinfo.image_url = data['image_url']
             user.save()
             userinfo.save()
