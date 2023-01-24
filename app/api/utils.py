@@ -628,7 +628,7 @@ class FavoriteGoalsUtils:
             "   api_goal " +
             "INNER JOIN api_favoritegoals ON api_favoritegoals.goal_id = api_goal.id " +
             "WHERE " +
-            "   api_favoritegoals.user_id = %s",
+            "   api_favoritegoals.user_id = %s ",
             [user_id]
         )
 
@@ -764,66 +764,126 @@ class RankingUtils:
             for row in cursor.fetchall()
         ]
 
-    def get_ranking(request):
+    def get_ranking(request, user_id):
         with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT SUM(points) as points, user_id FROM ( " +
-                "   (select " +
-                "       count(id) as points, user_id " +
-                "   from " +
-                "       api_media " +
-                "   group by user_id) " +
-                "   union " +
-                "   (select " +
-                "       sum(current_quantity) as points, user_id " +
-                "   from " +
-                "       api_goal " +
-                "   where is_done = true " +
-                "   group by user_id) " +
-                "   union " +
-                "   (select " +
-                "       sum(current_quantity)*0.5 as undone_goal_points, user_id " +
-                "   from " +
-                "       api_goal "+
-                "   where is_done = false and is_active = false " +
-                "   group by user_id) " +
-                ") as points_table " +
-                "group by user_id " + 
-                "order by points desc "
-            )
+            if user_id == -1:
+                cursor.execute(
+                    "SELECT SUM(points) as points, user_id FROM ( " +
+                    "   (select " +
+                    "       count(id) as points, user_id " +
+                    "   from " +
+                    "       api_media " +
+                    "   group by user_id) " +
+                    "   union " +
+                    "   (select " +
+                    "       sum(current_quantity) as points, user_id " +
+                    "   from " +
+                    "       api_goal " +
+                    "   where is_done = true " +
+                    "   group by user_id) " +
+                    "   union " +
+                    "   (select " +
+                    "       sum(current_quantity)*0.5 as undone_goal_points, user_id " +
+                    "   from " +
+                    "       api_goal "+
+                    "   where is_done = false and is_active = false " +
+                    "   group by user_id) " +
+                    ") as points_table " +
+                    "group by user_id " + 
+                    "order by points desc "
+                )          
+            else:
+                cursor.execute(
+                    "SELECT SUM(points) as points, user_id FROM ( " +
+                    "   (select " +
+                    "       count(id) as points, user_id " +
+                    "   from " +
+                    "       api_media " +
+                    "   group by user_id) " +
+                    "   union " +
+                    "   (select " +
+                    "       sum(current_quantity) as points, user_id " +
+                    "   from " +
+                    "       api_goal " +
+                    "   where is_done = true " +
+                    "   group by user_id) " +
+                    "   union " +
+                    "   (select " +
+                    "       sum(current_quantity)*0.5 as undone_goal_points, user_id " +
+                    "   from " +
+                    "       api_goal "+
+                    "   where is_done = false and is_active = false " +
+                    "   group by user_id) " +
+                    ") as points_table " +
+                    "where user_id = %s "
+                    "group by user_id " + 
+                    "order by points desc ",
+                    [user_id]
+                )             
+            
             result = RankingUtils.dictfetchall(cursor)
 
         return Response(result)
 
-    def get_ranking_by_type(request, mediatype_id):
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT SUM(points) as points, user_id FROM ( " +
-                "   (select " +
-                "       count(id) as points, user_id " +
-                "   from " +
-                "       api_media " +
-                "   where mediatype_id = %s " +
-                "   group by user_id) " +
-                "   union " +
-                "   (select " +
-                "       sum(current_quantity) as points, user_id " +
-                "   from " +
-                "       api_goal " +
-                "   where is_done = true and mediatype_id = %s " +
-                "   group by user_id) " +
-                "   union " +
-                "   (select " +
-                "       sum(current_quantity)*0.5 as undone_goal_points, user_id " +
-                "   from " +
-                "       api_goal "+
-                "   where is_done = false and is_active = false and mediatype_id = %s " +
-                "   group by user_id) " +
-                ") as points_table " +
-                "group by user_id " + 
-                "order by points desc ", 
-                [mediatype_id, mediatype_id, mediatype_id]
-            )
+    def get_ranking_by_type(request, user_id, mediatype_id):
+        with connection.cursor() as cursor:            
+            if user_id == -1:
+                cursor.execute(
+                    "SELECT SUM(points) as points, user_id FROM ( " +
+                    "   (select " +
+                    "       count(id) as points, user_id " +
+                    "   from " +
+                    "       api_media " +
+                    "   where mediatype_id = %s " +
+                    "   group by user_id) " +
+                    "   union " +
+                    "   (select " +
+                    "       sum(current_quantity) as points, user_id " +
+                    "   from " +
+                    "       api_goal " +
+                    "   where is_done = true and mediatype_id = %s " +
+                    "   group by user_id) " +
+                    "   union " +
+                    "   (select " +
+                    "       sum(current_quantity)*0.5 as undone_goal_points, user_id " +
+                    "   from " +
+                    "       api_goal "+
+                    "   where is_done = false and is_active = false and mediatype_id = %s " +
+                    "   group by user_id) " +
+                    ") as points_table " +
+                    "group by user_id " + 
+                    "order by points desc ", 
+                    [mediatype_id, mediatype_id, mediatype_id]
+                )
+            else:
+                cursor.execute(
+                    "SELECT SUM(points) as points, user_id FROM ( " +
+                    "   (select " +
+                    "       count(id) as points, user_id " +
+                    "   from " +
+                    "       api_media " +
+                    "   where mediatype_id = %s " +
+                    "   group by user_id) " +
+                    "   union " +
+                    "   (select " +
+                    "       sum(current_quantity) as points, user_id " +
+                    "   from " +
+                    "       api_goal " +
+                    "   where is_done = true and mediatype_id = %s " +
+                    "   group by user_id) " +
+                    "   union " +
+                    "   (select " +
+                    "       sum(current_quantity)*0.5 as undone_goal_points, user_id " +
+                    "   from " +
+                    "       api_goal "+
+                    "   where is_done = false and is_active = false and mediatype_id = %s " +
+                    "   group by user_id) " +
+                    ") as points_table " +
+                    "where user_id = %s "
+                    "group by user_id " + 
+                    "order by points desc ", 
+                    [mediatype_id, mediatype_id, mediatype_id, user_id]
+                )
             result = RankingUtils.dictfetchall(cursor)
 
         return Response(result)

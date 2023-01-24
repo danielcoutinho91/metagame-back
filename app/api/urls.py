@@ -49,6 +49,8 @@ urlpatterns = [
     path('medias/goal/<str:goal_id>', views.medias_by_goal, name='medias_by_goal'),
 
     path('ranking', views.ranking, name='ranking'),
-    path('ranking/<str:mediatype>', views.ranking_by_type, name='ranking_by_type')
+    path('ranking/<str:mediatype>', views.ranking_by_type, name='ranking_by_type'),
+    path('ranking/user/<str:user_id>', views.ranking_by_user, name='ranking_by_user'),
+    path('ranking/user/<str:user_id>/<str:mediatype>', views.ranking_by_user_and_type, name='ranking_by_user_and_type')
 
 ]
