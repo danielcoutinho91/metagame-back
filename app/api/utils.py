@@ -237,7 +237,6 @@ class Utils:
     def get_routes():
         return Response(Utils.routes)
 
-
 class UserUtils:
 
     def get_me(request):
@@ -450,7 +449,7 @@ class GoalUtils:
                 "FROM " +
                 "   api_goal " +
                 "INNER JOIN api_favoritegoals ON api_favoritegoals.goal_id = api_goal.id " +
-                "WHERE api_goal.id = %s"
+                "WHERE api_goal.id = %s "
                 "GROUP BY " +
                 "   api_goal.id ", [goal_id]
             )        
