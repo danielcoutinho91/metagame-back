@@ -763,6 +763,36 @@ class RankingUtils:
             dict(zip(columns, row))
             for row in cursor.fetchall()
         ]
+    
+    def get_medias_top(request):
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT " +
+                "   id_on_api, image_on_api, mediatype_id, count(id_on_api) as qtt " +
+                "FROM " +
+                "   api_media " +
+                "group by id_on_api, mediatype_id, image_on_api " + 
+                "order by qtt desc  "
+            )    
+            result = RankingUtils.dictfetchall(cursor)
+
+        return Response(result)
+    
+    def get_medias_top_by_type(request, mediatype_id):
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT " +
+                "   id_on_api, image_on_api, mediatype_id, count(id_on_api) as qtt " +
+                "FROM " +
+                "   api_media " +
+                "where mediatype_id = %s " +
+                "group by id_on_api, mediatype_id, image_on_api " + 
+                "order by qtt desc  ",
+                [mediatype_id]
+            )    
+            result = RankingUtils.dictfetchall(cursor)
+
+        return Response(result)
 
     def get_ranking(request, user_id):
         with connection.cursor() as cursor:

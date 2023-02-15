@@ -407,6 +407,28 @@ def medias_by_goal(request, goal_id):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+def medias_top(request):
+    if request.method == 'GET':
+        return RankingUtils.get_medias_top(request)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+def medias_top_by_type(request, mediatype):
+    if request.method == 'GET':
+        if mediatype == 'movies':
+            return RankingUtils.get_medias_top_by_type(request, 1)
+        if mediatype == 'games':
+            return RankingUtils.get_medias_top_by_type(request, 2)
+        if mediatype == 'books':
+            return RankingUtils.get_medias_top_by_type(request, 3)
+        return RankingUtils.get_medias_top(request)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
 # RANKING ---------------------------------------------------------------------------------------------------------------------------------------------------------
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
@@ -421,11 +443,11 @@ def ranking(request):
 def ranking_by_type(request, mediatype):
     if request.method == 'GET':
         if mediatype == 'movies':
-            return RankingUtils.get_ranking_by_type(request, 1, -1)
+            return RankingUtils.get_ranking_by_type(request, -1, 1)
         if mediatype == 'games':
-            return RankingUtils.get_ranking_by_type(request, 2, -1)
+            return RankingUtils.get_ranking_by_type(request, -1, 2)
         if mediatype == 'books':
-            return RankingUtils.get_ranking_by_type(request, 3, -1)
+            return RankingUtils.get_ranking_by_type(request, -1, 3)
         return RankingUtils.get_ranking(request)
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
