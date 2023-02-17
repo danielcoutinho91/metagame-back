@@ -559,7 +559,22 @@ class GoalUtils:
             mediatype=mediatype, is_active=True, user_id=user_id).first()
 
         if active_goal_by_type:
-            return Response(data={"error": "Já existe uma meta ativa para esta categoria"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(data={"error": "Já existe uma meta ativa para esta categoria"}, status=status.HTTP_401_UNAUTHORIZED)        
+
+        goals = Goal.objects.filter(user_id=user_id).order_by('-start_date')
+        
+        repeated_goals_count = 0
+        last_goal_type = 0
+        suggestion = False
+        if len(goals) > 0:
+            for goal in goals:                
+                print(goal.mediatype_id)
+                if last_goal_type == goal.mediatype_id:
+                    repeated_goals_count += 1
+                last_goal_type = goal.mediatype_id
+        
+        if (repeated_goals_count >= 2 and last_goal_type == mediatype_id):
+            suggestion = True
 
         goal = Goal.objects.create(
             user=user,
@@ -574,7 +589,9 @@ class GoalUtils:
         goal.save()
 
         serializer = GoalSerializer(goal, many=False)
-        return Response(serializer.data)
+        data = serializer.data
+        # data['suggestion'] = suggestion
+        return Response(data)
 
     def delete_goal(request, goal_id):
         goal = Goal.objects.get(id=goal_id)
