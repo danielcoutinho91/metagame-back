@@ -146,7 +146,7 @@ class Utils:
                     'Endpoint': '/api/medias',
                     'method': 'GET, POST',
                     'headers': {"Authorization": "Bearer token"},
-                    'body': {"mediatype": "mediatype_id", "id_on_api": "id_on_api", "image_on_api": "image_on_api"},
+                    'body': {"mediatype": "mediatype_id", "id_on_api": "id_on_api", "image_on_api": "image_on_api", "name_on_api": "name_on_api"},
                     'description': 'GET: Retorna um array com todos os registros de mídias do sistema, POST: Cria um novo registro de mídia com os dados da requisição'
                 },
                 {
@@ -176,6 +176,20 @@ class Utils:
                     'headers': {"Authorization": "Bearer token"},
                     'body': None,
                     'description': 'GET: Retorna todos os registros de livros'
+                },
+                {
+                    'Endpoint': '/api/medias/top',
+                    'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
+                    'body': None,
+                    'description': 'GET: Retorna as mídias consumidas do sistema ordenando pela quantidade de cadastros.'
+                },
+                {
+                    'Endpoint': '/api/medias/top/:media_type',
+                    'method': 'GET',
+                    'headers': {"Authorization": "Bearer token"},
+                    'body': None,
+                    'description': 'GET: Retorna as mídias consumidas do sistema de determinado tipo ordenando pela quantidade de cadastros. (movies / games / books)'
                 },
                 {
                     'Endpoint': '/api/medias/user/:user_id',
@@ -731,6 +745,7 @@ class MediaUtils:
         mediatype_id = data['mediatype']
         id_on_api = data['id_on_api']
         image_on_api = data['image_on_api']
+        name_on_api = data['name_on_api']
 
         mediatype = MediaType.objects.get(id=mediatype_id)
         active_goal_by_type = Goal.objects.filter(mediatype=mediatype, is_active=True, user_id=user_id).first()
@@ -760,7 +775,8 @@ class MediaUtils:
             mediatype=mediatype,
             goal=active_goal_by_type,
             id_on_api=id_on_api,
-            image_on_api=image_on_api
+            image_on_api=image_on_api,
+            name_on_api=name_on_api
         )
         media.save()
 
@@ -785,10 +801,10 @@ class RankingUtils:
         with connection.cursor() as cursor:
             cursor.execute(
                 "SELECT " +
-                "   id_on_api, image_on_api, mediatype_id, count(id_on_api) as qtt " +
+                "   id_on_api, image_on_api, name_on_api, mediatype_id, count(id_on_api) as qtt " +
                 "FROM " +
                 "   api_media " +
-                "group by id_on_api, mediatype_id, image_on_api " + 
+                "group by id_on_api, mediatype_id, image_on_api, name_on_api " + 
                 "order by qtt desc  "
             )    
             result = RankingUtils.dictfetchall(cursor)
@@ -799,11 +815,11 @@ class RankingUtils:
         with connection.cursor() as cursor:
             cursor.execute(
                 "SELECT " +
-                "   id_on_api, image_on_api, mediatype_id, count(id_on_api) as qtt " +
+                "   id_on_api, image_on_api, name_on_api, mediatype_id, count(id_on_api) as qtt " +
                 "FROM " +
                 "   api_media " +
                 "where mediatype_id = %s " +
-                "group by id_on_api, mediatype_id, image_on_api " + 
+                "group by id_on_api, mediatype_id, image_on_api, name_on_api " + 
                 "order by qtt desc  ",
                 [mediatype_id]
             )    
