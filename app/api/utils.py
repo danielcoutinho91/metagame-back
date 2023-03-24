@@ -837,14 +837,14 @@ class RankingUtils:
                     "   from " +
                     "       api_media " +
                     "   group by user_id) " +
-                    "   union " +
+                    "   union all" +
                     "   (select " +
                     "       sum(current_quantity) as points, user_id " +
                     "   from " +
                     "       api_goal " +
                     "   where is_done = true " +
                     "   group by user_id) " +
-                    "   union " +
+                    "   union all" +
                     "   (select " +
                     "       sum(current_quantity)*0.5 as undone_goal_points, user_id " +
                     "   from " +
@@ -863,14 +863,14 @@ class RankingUtils:
                     "   from " +
                     "       api_media " +
                     "   group by user_id) " +
-                    "   union " +
+                    "   union all " +
                     "   (select " +
                     "       sum(current_quantity) as points, user_id " +
                     "   from " +
                     "       api_goal " +
                     "   where is_done = true " +
                     "   group by user_id) " +
-                    "   union " +
+                    "   union all " +
                     "   (select " +
                     "       sum(current_quantity)*0.5 as undone_goal_points, user_id " +
                     "   from " +
@@ -899,14 +899,14 @@ class RankingUtils:
                     "       api_media " +
                     "   where mediatype_id = %s " +
                     "   group by user_id) " +
-                    "   union " +
+                    "   union all " +
                     "   (select " +
                     "       sum(current_quantity) as points, user_id " +
                     "   from " +
                     "       api_goal " +
                     "   where is_done = true and mediatype_id = %s " +
                     "   group by user_id) " +
-                    "   union " +
+                    "   union all " +
                     "   (select " +
                     "       sum(current_quantity)*0.5 as undone_goal_points, user_id " +
                     "   from " +
@@ -927,14 +927,14 @@ class RankingUtils:
                     "       api_media " +
                     "   where mediatype_id = %s " +
                     "   group by user_id) " +
-                    "   union " +
+                    "   union all " +
                     "   (select " +
                     "       sum(current_quantity) as points, user_id " +
                     "   from " +
                     "       api_goal " +
                     "   where is_done = true and mediatype_id = %s " +
                     "   group by user_id) " +
-                    "   union " +
+                    "   union all " +
                     "   (select " +
                     "       sum(current_quantity)*0.5 as undone_goal_points, user_id " +
                     "   from " +
