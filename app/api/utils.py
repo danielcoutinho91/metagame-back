@@ -300,6 +300,21 @@ class UserUtils:
         user_by_username = User.objects.filter(username=username).first()
         user_by_email = User.objects.filter(email=email).first()
 
+        if username == "":
+            return Response(data={"error": "Campo USERNAME está vazio"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        if first_name == "":
+            return Response(data={"error": "Campo NOME está vazio"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        if email == "":
+            return Response(data={"error": "Campo EMAIL está vazio"}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            if "@" not in email or ".com" not in email:
+                return Response(data={"error": "EMAIL inválido"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        if password == "":
+            return Response(data={"error": "Campo SENHA está vazio"}, status=status.HTTP_401_UNAUTHORIZED)
+
         if user_by_email:
             return Response(data={"error": "Email já cadastrado"}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -335,10 +350,22 @@ class UserUtils:
         user = User.objects.get(id=user_id)
         userinfo = UserInfo.objects.get(user_id=user_id)
 
+        username = data['username']
+        first_name = data['first_name']
+
         if 'password' in data:            
             password = data['password']
         else:
             password = ""
+        
+        if username == "":
+            return Response(data={"error": "Campo USERNAME está vazio"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        if first_name == "":
+            return Response(data={"error": "Campo NOME está vazio"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        if password == "":
+            return Response(data={"error": "Campo SENHA está vazio"}, status=status.HTTP_401_UNAUTHORIZED)
 
         if (str(current_user) == str(user.username)):
             user.username = data['username']
