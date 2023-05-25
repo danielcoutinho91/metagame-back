@@ -353,10 +353,10 @@ class UserUtils:
         username = data['username']
         first_name = data['first_name']
 
-        if 'password' in data:            
-            password = data['password']
-        else:
-            password = ""
+        # if 'password' in data:            
+        #     password = data['password']
+        # else:
+        #     password = ""
         
         if username == "":
             return Response(data={"error": "Campo USERNAME está vazio"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -364,16 +364,16 @@ class UserUtils:
         if first_name == "":
             return Response(data={"error": "Campo NOME está vazio"}, status=status.HTTP_401_UNAUTHORIZED)
         
-        if password == "":
-            return Response(data={"error": "Campo SENHA está vazio"}, status=status.HTTP_401_UNAUTHORIZED)
+        # if password == "":
+        #     return Response(data={"error": "Campo SENHA está vazio"}, status=status.HTTP_401_UNAUTHORIZED)
 
         if (str(current_user) == str(user.username)):
             user.username = data['username']
             user.first_name = data['first_name']
             user.last_name = data['last_name']
             user.email = data['email']
-            if password != "":
-                user.set_password(password)
+            # if password != "":
+            #     user.set_password(password)
             userinfo.image_url = data['image_url']
             user.save()
             userinfo.save()

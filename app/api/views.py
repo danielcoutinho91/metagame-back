@@ -17,7 +17,7 @@ def unauthorized(request):
     return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def me(request):
     return UserUtils.get_me(request)
 
@@ -33,7 +33,7 @@ def user(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def user_by_id(request, user_id):
     if request.method == 'GET':
         return UserUtils.get_user_by_id(request, user_id)
@@ -48,7 +48,7 @@ def user_by_id(request, user_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def user_by_username_or_email(request, username):
     if request.method == 'GET':
         return UserUtils.get_user_by_username_or_email(request, username)
@@ -74,7 +74,7 @@ def media_type(request):
 # GOAL ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 @api_view(['GET', 'POST'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def goal(request):
     if request.method == "GET":
         return GoalUtils.get_all_goals(request, 0, 0)
@@ -86,7 +86,7 @@ def goal(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def active_goal(request):
     if request.method == "GET":
         return GoalUtils.get_all_goals(request, 0, 1)
@@ -95,7 +95,7 @@ def active_goal(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def inactive_goal(request):
     if request.method == "GET":
         return GoalUtils.get_all_goals(request, 0, 2)
@@ -104,7 +104,7 @@ def inactive_goal(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def done_goal(request):
     if request.method == "GET":
         return GoalUtils.get_all_goals(request, 0, 3)
@@ -113,7 +113,7 @@ def done_goal(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def movie_goals(request):
     if request.method == "GET":
         return GoalUtils.get_all_goals(request, 1, 0)
@@ -122,7 +122,7 @@ def movie_goals(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def game_goals(request):
     if request.method == "GET":
         return GoalUtils.get_all_goals(request, 2, 0)
@@ -131,7 +131,7 @@ def game_goals(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def book_goals(request):
     if request.method == "GET":
         return GoalUtils.get_all_goals(request, 3, 0)
@@ -140,7 +140,7 @@ def book_goals(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def movie_goals_by_activity(request, is_active):
     if request.method == "GET":
         if is_active == 'active':
@@ -155,7 +155,7 @@ def movie_goals_by_activity(request, is_active):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def game_goals_by_activity(request, is_active):
     if request.method == "GET":
         if is_active == 'active':
@@ -171,7 +171,7 @@ def game_goals_by_activity(request, is_active):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def book_goals_by_activity(request, is_active):
     if request.method == "GET":
         if is_active == 'active':
@@ -187,7 +187,7 @@ def book_goals_by_activity(request, is_active):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET', 'DELETE'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def goal_by_id(request, goal_id):
     if request.method == 'GET':
         return GoalUtils.get_goal_by_id(request, goal_id)
@@ -199,7 +199,7 @@ def goal_by_id(request, goal_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def goals_by_user(request, user_id):
     if request.method == 'GET':
         return GoalUtils.get_all_goals_by_user(request, 0, 0, user_id)
@@ -207,7 +207,7 @@ def goals_by_user(request, user_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def movie_goals_by_user(request, user_id):
     if request.method == 'GET':
         return GoalUtils.get_all_goals_by_user(request, 1, 0, user_id)
@@ -215,7 +215,7 @@ def movie_goals_by_user(request, user_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def game_goals_by_user(request, user_id):
     if request.method == 'GET':
         return GoalUtils.get_all_goals_by_user(request, 2, 0, user_id)
@@ -223,7 +223,7 @@ def game_goals_by_user(request, user_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def book_goals_by_user(request, user_id):
     if request.method == 'GET':
         return GoalUtils.get_all_goals_by_user(request, 3, 0, user_id)
@@ -231,7 +231,7 @@ def book_goals_by_user(request, user_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def goals_by_user_and_activity(request, user_id, is_active):
     if request.method == 'GET':
         if is_active == 'active':
@@ -246,7 +246,7 @@ def goals_by_user_and_activity(request, user_id, is_active):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def movie_goals_by_user_and_activity(request, user_id, is_active):
     if request.method == 'GET':
         if is_active == 'active':
@@ -261,7 +261,7 @@ def movie_goals_by_user_and_activity(request, user_id, is_active):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def game_goals_by_user_and_activity(request, user_id, is_active):
     if request.method == 'GET':
         if is_active == 'active':
@@ -276,7 +276,7 @@ def game_goals_by_user_and_activity(request, user_id, is_active):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def book_goals_by_user_and_activity(request, user_id, is_active):
     if request.method == 'GET':
         if is_active == 'active':
@@ -294,7 +294,7 @@ def book_goals_by_user_and_activity(request, user_id, is_active):
 # GOAL LIKES ------------------------------------------------------------------------------------------------------------------------------------------------------
 
 @api_view(['GET', 'POST'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def favorite_goals(request):
     if request.method == 'GET':
         return FavoriteGoalsUtils.get_all_favorite_goals(request)
@@ -306,7 +306,7 @@ def favorite_goals(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET', 'POST'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def favorite_goals_by_user(request, user_id):
     if request.method == 'GET':
         return FavoriteGoalsUtils.get_all_favorite_goals_by_user(request, user_id)
@@ -317,7 +317,7 @@ def favorite_goals_by_user(request, user_id):
 # MEDIA -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 @api_view(['GET', 'POST'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def media(request):
     if request.method == "GET":
         return MediaUtils.get_all_medias(0)
@@ -329,7 +329,7 @@ def media(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def movie_medias(request):
     if request.method == "GET":
         return MediaUtils.get_all_medias(1)
@@ -338,7 +338,7 @@ def movie_medias(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def game_medias(request):
     if request.method == "GET":
         return MediaUtils.get_all_medias(2)
@@ -347,7 +347,7 @@ def game_medias(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def book_medias(request):
     if request.method == "GET":
         return MediaUtils.get_all_medias(3)
@@ -356,7 +356,7 @@ def book_medias(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET', 'DELETE'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def media_by_id(request, media_id):
     if request.method == 'GET':
         return MediaUtils.get_media_by_id(request, media_id)
@@ -368,7 +368,7 @@ def media_by_id(request, media_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def medias_by_user(request, user_id):
     if request.method == 'GET':
         return MediaUtils.get_all_medias_by_user(request, 0, user_id)
@@ -376,7 +376,7 @@ def medias_by_user(request, user_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def movie_medias_by_user(request, user_id):
     if request.method == 'GET':
         return MediaUtils.get_all_medias_by_user(request, 1, user_id)
@@ -384,7 +384,7 @@ def movie_medias_by_user(request, user_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def game_medias_by_user(request, user_id):
     if request.method == 'GET':
         return MediaUtils.get_all_medias_by_user(request, 2, user_id)
@@ -392,7 +392,7 @@ def game_medias_by_user(request, user_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def book_medias_by_user(request, user_id):
     if request.method == 'GET':
         return MediaUtils.get_all_medias_by_user(request, 3, user_id)
@@ -400,7 +400,7 @@ def book_medias_by_user(request, user_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def medias_by_goal(request, goal_id):
     if request.method == 'GET':
         return MediaUtils.get_all_medias_by_goal(request, goal_id)
@@ -408,7 +408,7 @@ def medias_by_goal(request, goal_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def medias_top(request):
     if request.method == 'GET':
         return RankingUtils.get_medias_top(request)
@@ -416,7 +416,7 @@ def medias_top(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def medias_top_by_type(request, mediatype):
     if request.method == 'GET':
         if mediatype == 'movies':
@@ -431,7 +431,7 @@ def medias_top_by_type(request, mediatype):
 
 # RANKING ---------------------------------------------------------------------------------------------------------------------------------------------------------
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def ranking(request):
     if request.method == 'GET':
         return RankingUtils.get_ranking(request, -1)
@@ -439,7 +439,7 @@ def ranking(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def ranking_by_type(request, mediatype):
     if request.method == 'GET':
         if mediatype == 'movies':
@@ -453,7 +453,7 @@ def ranking_by_type(request, mediatype):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def ranking_by_user(request, user_id):
     if request.method == 'GET':
         return RankingUtils.get_ranking(request, user_id)
@@ -461,7 +461,7 @@ def ranking_by_user(request, user_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @permission_classes((IsAuthenticated, ))
 def ranking_by_user_and_type(request, user_id, mediatype):
     if request.method == 'GET':
         if mediatype == 'movies':
